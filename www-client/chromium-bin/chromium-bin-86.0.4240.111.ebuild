@@ -43,7 +43,7 @@ RDEPEND="
 	dev-libs/libxslt
 	dev-libs/nspr
 	>=dev-libs/nss-3.26
-	>=dev-libs/re2-0.2020.08.01
+	<dev-libs/re2-0.2020.10.01
 	media-libs/alsa-lib
 	media-libs/flac
 	media-libs/fontconfig
