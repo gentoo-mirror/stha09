@@ -61,8 +61,6 @@ RDEPEND="
 	system-ffmpeg? ( <media-video/ffmpeg-4.3[chromium] )
 "
 
-BDEPEND="dev-util/patchelf"
-
 S="${WORKDIR}"
 
 src_prepare() {
@@ -74,12 +72,12 @@ src_install() {
 	rm _gpgorigin || die
 	doins -r .
 
-	patchelf --remove-needed libgnome-keyring.so.0 \
-		"${ED}/usr/share/${PN}/resources/app.asar.unpacked/node_modules/keytar3/build/Release/keytar.node" || die
-
 	pushd "${ED}/usr/share/${PN}/locales" > /dev/null || die
 	chromium_remove_language_paks
 	popd > /dev/null || die
+
+	rm -rf "${ED}/usr/share/${PN}/resources/assets/"{.gitignore,macos,tlb,windows,x86,x64,arm64} || die
+	rm -rf "${ED}/usr/share/${PN}/resources/tmp" || die
 
 	if use system-ffmpeg; then
 		rm -f "${ED}/usr/share/${PN}/libffmpeg.so" || die
