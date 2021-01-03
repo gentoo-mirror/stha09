@@ -6,18 +6,6 @@ net-im/teams:swiftshader - Install SwiftShader OpenGL libaries.
 net-im/teams:system-ffmpeg - Use system ffmpeg instead of the bundled one
 net-im/teams-insiders:swiftshader - Install SwiftShader OpenGL libaries.
 net-im/teams-insiders:system-ffmpeg - Use system ffmpeg instead of the bundled one
-sys-devel/clang:build-man - Build man pages instead of taking pre-generated (requires dev-python/sphinx)
-sys-devel/clang:default-compiler-rt - Use compiler-rt instead of libgcc as the default rtlib for clang
-sys-devel/clang:default-libcxx - Use libc++ instead of libstdc++ as the default stdlib for clang
-sys-devel/clang:default-lld - Use lld as the default linker for clang
-sys-devel/clang:static-analyzer - Install the Clang static analyzer
-sys-devel/llvm:build-man - Build man pages instead of taking pre-generated (requires dev-python/sphinx)
-sys-devel/llvm:doc - Build and install the HTML documentation and regenerate the man pages
-sys-devel/llvm:exegesis - Enable performance counter support for llvm-exegesis tool that can be used to measure host machine instruction characteristics
-sys-devel/llvm:gold - Build the gold linker plugin
-sys-devel/llvm:ncurses - Support querying terminal properties using ncurses' terminfo
-sys-devel/llvm:xar - Support dumping LLVM bitcode sections in Mach-O files (uses app-arch/xar)
-sys-devel/llvm:z3 - Enable support for sci-mathematics/z3 constraint solver
 www-client/chromium-bin:devtools - Install developer tools. Usually not needed for general use.
 www-client/chromium-bin:suid - Build the SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels
 www-client/chromium-bin:swiftshader - Install SwiftShader OpenGL libaries.
