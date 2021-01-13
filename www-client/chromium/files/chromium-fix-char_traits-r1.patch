@@ -1,0 +1,49 @@
+From 6e811cf679b8e53350d1a5b851385409225e8686 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 13 Jan 2021 11:25:31 +0000
+Subject: [PATCH] GCC: fix comparison of base::StringPiece in char_traits
+
+Comparing base::StringPiece("\x11\x11") with
+base::StringPiece("\x99\x99") wrongly returns that "\x99\x99" is smaller
+than "\x11\x11". The problem here is that characters are interpreted
+signed. In previous example 0x99 is therefore interpreted as -104 which
+of course is smaller than 17 (0x11). Clang is not affected, because it
+uses __builtin_memcmp or __builtin_wmemcmp.
+
+Solution is to use std::char_traits<T>::lt, which is constexpr in C++14
+already and handles signed characters correctly.
+
+Bug: 941696
+Change-Id: I24edfa4f92058faf87bd029b06832ae1e9e3a6d5
+---
+
+diff --git a/base/strings/char_traits.h b/base/strings/char_traits.h
+index 574d6a2..f871916 100644
+--- a/base/strings/char_traits.h
++++ b/base/strings/char_traits.h
+@@ -7,6 +7,8 @@
+ 
+ #include <stddef.h>
+ 
++#include <string>
++
+ #include "base/compiler_specific.h"
+ 
+ namespace base {
+@@ -33,10 +35,14 @@
+ constexpr int CharTraits<T>::compare(const T* s1,
+                                      const T* s2,
+                                      size_t n) noexcept {
++  // Comparison with operator < fails, because of signed/unsigned
++  // mismatch, https://crbug.com/941696
++  // std::char_traits<T>::lt is guaranteed to be constexpr in C++14:
++  // https://timsong-cpp.github.io/cppwp/n4140/char.traits.specializations#char
+   for (; n; --n, ++s1, ++s2) {
+-    if (*s1 < *s2)
++    if (std::char_traits<T>::lt(*s1, *s2))
+       return -1;
+-    if (*s1 > *s2)
++    if (std::char_traits<T>::lt(*s2, *s1))
+       return 1;
+   }
+   return 0;
