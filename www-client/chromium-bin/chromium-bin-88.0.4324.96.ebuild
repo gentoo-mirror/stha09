@@ -1,4 +1,4 @@
-# Copyright 2020 Gentoo Authors
+# Copyright 2020-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -16,24 +16,42 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-c
 	devtools? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-resources.tar.xz )
 	amd64? (
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common-x86_64.tar.xz
-		vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-vaapi-x86_64.tar.xz )
-		!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-official-x86_64.tar.xz )
+		wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland_vaapi-x86_64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland-x86_64.tar.xz )
+		)
+		!wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11_vaapi-x86_64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11-x86_64.tar.xz )
+		)
 	)
 	arm64? (
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common-aarch64.tar.xz
-		vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-vaapi-aarch64.tar.xz )
-		!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-official-aarch64.tar.xz )
+		wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland_vaapi-aarch64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland-aarch64.tar.xz )
+		)
+		!wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11_vaapi-aarch64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11-aarch64.tar.xz )
+		)
 	)
 	x86? (
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common-i686.tar.xz
-		vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-vaapi-i686.tar.xz )
-		!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-official-i686.tar.xz )
+		wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland_vaapi-i686.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland-i686.tar.xz )
+		)
+		!wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11_vaapi-i686.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11-i686.tar.xz )
+		)
 	)"
 
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="-* ~amd64 ~arm64 ~x86"
-IUSE="cpu_flags_x86_sse2 devtools selinux +suid +swiftshader vaapi widevine"
+IUSE="cpu_flags_x86_sse2 devtools selinux suid +swiftshader vaapi wayland widevine"
 
 RDEPEND="
 	app-accessibility/at-spi2-atk:2
@@ -43,12 +61,12 @@ RDEPEND="
 	dev-libs/atk
 	dev-libs/expat
 	dev-libs/glib:2
-	<dev-libs/icu-68.1
+	dev-libs/icu:0/68.2
 	dev-libs/libxml2[icu]
 	dev-libs/libxslt
 	dev-libs/nspr
 	>=dev-libs/nss-3.26
-	>=dev-libs/re2-0.2020.11.01
+	dev-libs/re2:0/9
 	media-libs/alsa-lib
 	media-libs/flac
 	media-libs/fontconfig
@@ -68,6 +86,11 @@ RDEPEND="
 	net-print/cups
 	sys-apps/dbus
 	sys-apps/pciutils
+	>=sys-devel/gcc-9.3.0
+	>=sys-libs/glibc-2.32
+	sys-libs/zlib[minizip]
+	virtual/opengl
+	virtual/ttf-fonts
 	virtual/udev
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf:2
@@ -86,16 +109,21 @@ RDEPEND="
 	x11-libs/libxcb
 	x11-libs/pango
 	x11-misc/xdg-utils
-	sys-libs/zlib[minizip]
-	virtual/opengl
-	virtual/ttf-fonts
-	selinux? ( sec-policy/selinux-chromium )
 	amd64? (
 		 widevine? ( www-plugins/chrome-binary-plugins )
+	)
+	selinux? ( sec-policy/selinux-chromium )
+	wayland? (
+		dev-libs/wayland
+		dev-libs/libffi
+		x11-libs/gtk+:3[wayland,X]
+		x11-libs/libdrm
+		x11-libs/libxkbcommon
 	)
 "
 
 S=${WORKDIR}
+QA_PREBUILT="*"
 
 DISABLE_AUTOFORMATTING="yes"
 DOC_CONTENTS="
