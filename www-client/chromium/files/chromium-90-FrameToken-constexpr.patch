@@ -1,0 +1,27 @@
+From fafe170728d8e5926eefe26079959454f910dcd0 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 12 Feb 2021 18:08:47 +0000
+Subject: [PATCH] GCC: remove constexpr from operator of FrameToken
+
+MultiToken::value() is not constexpr, but is called from
+constexpr operator in FrameToken.
+---
+ third_party/blink/public/common/tokens/tokens.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/blink/public/common/tokens/tokens.h b/third_party/blink/public/common/tokens/tokens.h
+index 37884d5..61b010c 100644
+--- a/third_party/blink/public/common/tokens/tokens.h
++++ b/third_party/blink/public/common/tokens/tokens.h
+@@ -48,7 +48,7 @@ class FrameToken : public MultiToken<LocalFrameToken, RemoteFrameToken> {
+ 
+   // Allow implicit casting down to base::UnguessableToken during the migration.
+   // NOLINTNEXTLINE(google-explicit-constructor)
+-  constexpr operator const base::UnguessableToken&() const& {
++  operator const base::UnguessableToken&() const& {
+     return this->value();
+   }
+ };
+-- 
+2.26.2
+
