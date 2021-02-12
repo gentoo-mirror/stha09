@@ -11,40 +11,43 @@ inherit chromium-2 desktop pax-utils readme.gentoo-r1 unpacker xdg-utils
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common.tar.xz
-	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-l10n.tar.xz
-	devtools? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-resources.tar.xz )
+
+MY_P=${P}-2
+
+SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common.tar.xz
+	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-l10n.tar.xz
+	devtools? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-resources.tar.xz )
 	amd64? (
-		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common-x86_64.tar.xz
+		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-x86_64.tar.xz
 		wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland_vaapi-x86_64.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland-x86_64.tar.xz )
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland_vaapi-x86_64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland-x86_64.tar.xz )
 		)
 		!wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11_vaapi-x86_64.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11-x86_64.tar.xz )
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11_vaapi-x86_64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-x86_64.tar.xz )
 		)
 	)
 	arm64? (
-		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common-aarch64.tar.xz
+		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-aarch64.tar.xz
 		wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland_vaapi-aarch64.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland-aarch64.tar.xz )
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland_vaapi-aarch64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland-aarch64.tar.xz )
 		)
 		!wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11_vaapi-aarch64.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11-aarch64.tar.xz )
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11_vaapi-aarch64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-aarch64.tar.xz )
 		)
 	)
 	x86? (
-		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-common-i686.tar.xz
+		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-i686.tar.xz
 		wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland_vaapi-i686.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-wayland-i686.tar.xz )
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland_vaapi-i686.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland-i686.tar.xz )
 		)
 		!wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11_vaapi-i686.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${P}-x11-i686.tar.xz )
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11_vaapi-i686.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-i686.tar.xz )
 		)
 	)"
 
