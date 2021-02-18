@@ -12,7 +12,7 @@ inherit chromium-2 desktop pax-utils readme.gentoo-r1 unpacker xdg-utils
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 
-MY_P=${P}-2
+MY_P=${P}-1
 
 SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common.tar.xz
 	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-l10n.tar.xz
@@ -26,17 +26,6 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P
 		!wayland? (
 			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11_vaapi-x86_64.tar.xz )
 			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-x86_64.tar.xz )
-		)
-	)
-	arm64? (
-		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-aarch64.tar.xz
-		wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland_vaapi-aarch64.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland-aarch64.tar.xz )
-		)
-		!wayland? (
-			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11_vaapi-aarch64.tar.xz )
-			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-aarch64.tar.xz )
 		)
 	)
 	x86? (
@@ -53,7 +42,7 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="-* ~amd64 ~arm64 ~x86"
+KEYWORDS="-* ~amd64 ~x86"
 IUSE="cpu_flags_x86_sse2 devtools selinux suid +swiftshader vaapi wayland widevine"
 
 RDEPEND="
