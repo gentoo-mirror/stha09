@@ -28,6 +28,17 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P
 			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-x86_64.tar.xz )
 		)
 	)
+	arm64? (
+		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-aarch64.tar.xz
+		wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland_vaapi-aarch64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland-aarch64.tar.xz )
+		)
+		!wayland? (
+			vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11_vaapi-aarch64.tar.xz )
+			!vaapi? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-x11-aarch64.tar.xz )
+		)
+	)
 	x86? (
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-i686.tar.xz
 		wayland? (
@@ -42,7 +53,7 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="-* ~amd64 ~x86"
+KEYWORDS="-* ~amd64 ~arm64 ~x86"
 IUSE="cpu_flags_x86_sse2 devtools selinux suid +swiftshader vaapi wayland widevine"
 
 RDEPEND="
