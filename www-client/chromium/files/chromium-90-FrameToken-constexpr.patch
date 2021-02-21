@@ -1,0 +1,27 @@
+From 097c30d742f7eeb395e7ab0520cc046765bc20e4 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 20 Feb 2021 20:02:35 +0000
+Subject: [PATCH] GCC: remove constexpr from operator== of FrameToken
+
+MultiToken::value() is not constexpr, but is called from
+constexpr operator== in FrameToken.
+---
+ third_party/blink/public/common/tokens/tokens.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/blink/public/common/tokens/tokens.h b/third_party/blink/public/common/tokens/tokens.h
+index f22aae1..ba6c815 100644
+--- a/third_party/blink/public/common/tokens/tokens.h
++++ b/third_party/blink/public/common/tokens/tokens.h
+@@ -51,7 +51,7 @@ class FrameToken : public MultiToken<LocalFrameToken, RemoteFrameToken> {
+   operator const base::UnguessableToken&() const& { return this->value(); }
+ 
+   // Allow direct comparison with base::UnguessableToken.
+-  constexpr bool operator==(const base::UnguessableToken& rhs) const {
++  bool operator==(const base::UnguessableToken& rhs) const {
+     return this->value() == rhs;
+   }
+ };
+-- 
+2.26.2
+
