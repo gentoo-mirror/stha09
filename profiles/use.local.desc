@@ -4,8 +4,9 @@
 
 net-im/teams:swiftshader - Install SwiftShader OpenGL libaries.
 net-im/teams:system-ffmpeg - Use system ffmpeg instead of the bundled one
+net-im/teams-insiders:suid - Enable SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels.
 net-im/teams-insiders:swiftshader - Install SwiftShader OpenGL libaries.
-net-im/teams-insiders:system-ffmpeg - Use system ffmpeg instead of the bundled one
+net-im/teams-insiders:system-ffmpeg - Use system ffmpeg instead of the bundled one.
 www-client/chromium:component-build - Split build into more shared libraries to speed up linking. Mostly intended for debugging and development, NOT RECOMMENDED for general use.
 www-client/chromium:hangouts - Enable support for Google Hangouts features such as screen sharing
 www-client/chromium:headless - Build Ozone only with headless backend, NOT RECOMMENDED for general use.
