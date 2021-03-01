@@ -1,0 +1,27 @@
+From 46df78dca736a4c699aff1899c627ea6f840afb7 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 25 Feb 2021 20:30:42 +0000
+Subject: [PATCH] GCC: add missing static constexpr member definition
+
+C++14 requires to definition of static constexpr members to
+emit a linker symbol.
+
+Bug: chromium:819294
+Change-Id: I06b7f1f7a6260982cf07a71c67295789c1f03084
+Reviewed-on: https://chromium-review.googlesource.com/c/angle/angle/+/2720261
+Reviewed-by: Shahbaz Youssefi <syoussefi@chromium.org>
+Commit-Queue: Shahbaz Youssefi <syoussefi@chromium.org>
+---
+
+--- a/third_party/angle/src/libANGLE/renderer/glslang_wrapper_utils.cpp
++++ b/third_party/angle/src/libANGLE/renderer/glslang_wrapper_utils.cpp
+@@ -2128,6 +2128,9 @@
+     gl::TransformFeedbackBuffersArray<std::vector<XfbVarying>> mXfbVaryings;
+ };
+ 
++constexpr size_t SpirvTransformFeedbackCodeGenerator::kXfbDecorationCount;
++constexpr spv::Decoration SpirvTransformFeedbackCodeGenerator::kXfbDecorations[kXfbDecorationCount];
++
+ void SpirvTransformFeedbackCodeGenerator::visitName(spirv::IdRef id,
+                                                     const spirv::LiteralString &name)
+ {
