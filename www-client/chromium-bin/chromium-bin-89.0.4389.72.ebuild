@@ -186,12 +186,12 @@ src_install() {
 	local CHROMIUM_BIN_HOME="opt/chromium-bin"
 
 	if ! use suid; then
-		rm -f "${CHROMIUM_BIN_HOME}/chrome-sandbox" || die
+		rm "${CHROMIUM_BIN_HOME}/chrome-sandbox" || die
 	fi
 
 	# Remove SwiftShader OpenGL libraries
 	if ! use swiftshader; then
-		rm -rf "${CHROMIUM_BIN_HOME}/swiftshader" || die
+		rm -r "${CHROMIUM_BIN_HOME}/swiftshader" || die
 	fi
 
 	# Clean unneeded languages
@@ -204,7 +204,7 @@ src_install() {
 	for size in 16 24 32 48 64 128 256 ; do
 		newicon -s ${size} "${CHROMIUM_BIN_HOME}/icons/hicolor/${size}x${size}/apps/chromium-browser.png" ${PN}-browser.png
 	done
-	rm -rf "${CHROMIUM_BIN_HOME}/icons"
+	rm -r "${CHROMIUM_BIN_HOME}/icons"
 
 	# Allow users to override command-line options, bug #357629.
 	insinto /etc/chromium-bin
