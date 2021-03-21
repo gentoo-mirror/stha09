@@ -1,4 +1,4 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -17,18 +17,16 @@ LICENSE="ms-teams-pre"
 SLOT="0"
 KEYWORDS="-* ~amd64"
 RESTRICT="bindist mirror splitdebug test"
-IUSE="swiftshader system-ffmpeg"
+IUSE="suid swiftshader system-ffmpeg"
 
 QA_PREBUILT="*"
-
-# libasound2 (>= 1.0.16), libatk-bridge2.0-0 (>= 2.5.3), libatk1.0-0 (>= 1.12.4), libc6 (>= 2.17), libcairo2 (>= 1.10.0), libcups2 (>= 1.4.0),
-# libexpat1 (>= 2.0.1), libgcc1 (>= 1:3.0), libgdk-pixbuf2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.35.8), libgtk-3-0 (>= 3.10.0), libnspr4 (>= 2:4.9-2~), libnss3
-# (>= 2:3.22), libpango-1.0-0 (>= 1.14.0), libpangocairo-1.0-0 (>= 1.14.0), libsecret-1-0 (>= 0.7),libuuid1 (>= 2.16), libx11-6 (>= 2:1.4.99.1), libx11-xcb1,
-# libxcb1 (>= 1.6), libxcomposite1 (>= 1:0.3-1), libxcursor1 (>> 1.1.2), libxdamage1 (>= 1:1.1), libxext6, libxfixes3, libxi6 (>= 2:1.2.99.4), libxkbfile
-# libxrandr2 (>= 2:1.2.99.3), libxrender1, libxss1, libxtst6, apt-transport-https, libfontconfig1 (>= 2.11.0), libdbus-1-3 (>= 1.6.18), libstdc++6 (>= 4.8.1)
+# libasound2 (>= 1.0.16), libatk-bridge2.0-0 (>= 2.5.3), libatk1.0-0 (>= 2.2.0), libc6 (>= 2.17), libcairo2 (>= 1.10.0), libcups2 (>= 1.4.0),
+# libexpat1 (>= 2.0.1), libgcc1 (>= 1:3.0), libgdk-pixbuf2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.39.4), libgtk-3-0 (>= 3.10.0), libnspr4 (>= 2:4.9-2~), libnss3
+# (>= 2:3.22), libpango-1.0-0 (>= 1.14.0), libpangocairo-1.0-0 (>= 1.14.0), libx11-6 (>= 2:1.4.99.1), libx11-xcb1, libxcb1 (>= 1.6), libatspi2.0-0 (>= 2.9.90),
+# libxcomposite1 (>= 1:0.3-1), libxcursor1 (>> 1.1.2), libxdamage1 (>= 1:1.1), libxext6, libxfixes3 (>= 1:5.0), libxi6 (>= 2:1.2.99.4), libxrandr2 (>= 2:1.2.99.3),
+# libxrender1, libxss1, libxtst6, apt-transport-https, libfontconfig1 (>= 2.11.0), libdbus-1-3 (>= 1.6.18), libstdc++6 (>= 4.8.1)
 RDEPEND="
 	app-accessibility/at-spi2-atk
-	app-crypt/libsecret
 	dev-libs/atk
 	dev-libs/expat
 	dev-libs/glib
@@ -40,7 +38,6 @@ RDEPEND="
 	net-print/cups
 	sys-apps/dbus
 	sys-apps/util-linux
-	x11-libs/cairo
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf
 	x11-libs/gtk+:3
@@ -56,7 +53,6 @@ RDEPEND="
 	x11-libs/libXrender
 	x11-libs/libXtst
 	x11-libs/libxcb
-	x11-libs/libxkbfile
 	x11-libs/pango
 	system-ffmpeg? ( <media-video/ffmpeg-4.3[chromium] )
 "
@@ -76,16 +72,22 @@ src_install() {
 	chromium_remove_language_paks
 	popd > /dev/null || die
 
-	rm -rf "${ED}/usr/share/${PN}/resources/assets/"{.gitignore,macos,tlb,windows,x86,x64,arm64} || die
-	rm -rf "${ED}/usr/share/${PN}/resources/tmp" || die
+	rm -r "${ED}/usr/share/${PN}/resources/assets/"{.gitignore,macos,tlb,windows,x86,x64,arm64} || die
+	rm -r "${ED}/usr/share/${PN}/resources/tmp" || die
 
 	if use system-ffmpeg; then
-		rm -f "${ED}/usr/share/${PN}/libffmpeg.so" || die
+		rm "${ED}/usr/share/${PN}/libffmpeg.so" || die
 		dosym "../../$(get_libdir)/chromium/libffmpeg.so" "usr/share/${PN}/libffmpeg.so" || die
 	fi
 
 	if ! use swiftshader; then
-		rm -rf "${ED}/usr/share/${PN}/swiftshader" || die
+		rm -r "${ED}/usr/share/${PN}/swiftshader" || die
+	fi
+
+	if use suid; then
+		fperms 4755 /usr/share/${PN}/chrome-sandbox
+	else
+		rm "${ED}/usr/share/${PN}/chrome-sandbox" || die
 	fi
 
 	fperms +x /usr/bin/${PN}
