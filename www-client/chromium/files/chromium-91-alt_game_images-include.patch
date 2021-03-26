@@ -1,0 +1,25 @@
+From 32a44fcc111daf899f498e876e4e333183b1f2bc Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 26 Mar 2021 09:33:26 +0000
+Subject: [PATCH] IWYU: add cstring for std::memcmp
+
+---
+ components/error_page/common/alt_game_images.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/components/error_page/common/alt_game_images.cc b/components/error_page/common/alt_game_images.cc
+index 9aa89e9..1258877 100644
+--- a/components/error_page/common/alt_game_images.cc
++++ b/components/error_page/common/alt_game_images.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "components/error_page/common/alt_game_images.h"
+ 
++#include <cstring>
++
+ #include "base/base64.h"
+ #include "base/base64url.h"
+ #include "base/rand_util.h"
+-- 
+2.26.3
+
