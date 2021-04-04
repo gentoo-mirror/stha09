@@ -1,0 +1,32 @@
+From 91085a3b93c78f8db688237280f6bbba69bb6893 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 3 Apr 2021 17:43:18 +0000
+Subject: [PATCH] GCC: remove ternary operator in gtk_util
+
+Ternary operator requires that operands after ? have
+same type. Here we have std::nullptr_t and ScopedGObject<_GtkWidget>.
+---
+ ui/gtk/gtk_util.cc | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ui/gtk/gtk_util.cc b/ui/gtk/gtk_util.cc
+index 04b8188..2c885e0 100644
+--- a/ui/gtk/gtk_util.cc
++++ b/ui/gtk/gtk_util.cc
+@@ -284,8 +284,12 @@ GtkCssContext::operator GtkStyleContext*() {
+ 
+ GtkCssContext GtkCssContext::GetParent() {
+   if (GtkCheckVersion(4)) {
++    if (root_ == widget_) {
++      return GtkCssContext(WrapGObject(gtk_widget_get_parent(widget_)),
++                           nullptr);
++    }
+     return GtkCssContext(WrapGObject(gtk_widget_get_parent(widget_)),
+-                         root_ == widget_ ? nullptr : root_);
++                         root_);
+   }
+   return GtkCssContext(WrapGObject(gtk_style_context_get_parent(context_)));
+ }
+-- 
+2.26.3
+

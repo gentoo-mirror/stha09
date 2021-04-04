@@ -1,0 +1,24 @@
+From 390d149a90e5c9e4ac086c667062aa323d20fc35 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 3 Apr 2021 15:46:18 +0000
+Subject: [PATCH] IWYU: add string for std::string
+
+---
+ ui/base/cursor/cursor_factory.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/base/cursor/cursor_factory.h b/ui/base/cursor/cursor_factory.h
+index c0adb4e..a4b25f9 100644
+--- a/ui/base/cursor/cursor_factory.h
++++ b/ui/base/cursor/cursor_factory.h
+@@ -5,6 +5,7 @@
+ #ifndef UI_BASE_CURSOR_CURSOR_FACTORY_H_
+ #define UI_BASE_CURSOR_CURSOR_FACTORY_H_
+ 
++#include <string>
+ #include <vector>
+ 
+ #include "base/component_export.h"
+-- 
+2.26.3
+
