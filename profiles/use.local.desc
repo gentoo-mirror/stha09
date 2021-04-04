@@ -18,7 +18,6 @@ www-client/chromium:screencast - Enable support for remote desktop and screen ca
 www-client/chromium:suid - Build the SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels
 www-client/chromium:system-ffmpeg - Use system ffmpeg instead of the bundled one
 www-client/chromium:system-icu - Use system icu instead of the bundled one
-www-client/chromium:tcmalloc - Use bundled tcmalloc instead of system malloc
 www-client/chromium:widevine - Unsupported closed-source DRM capability (required by Netflix VOD)
 www-client/chromium-bin:devtools - Install developer tools. Usually not needed for general use.
 www-client/chromium-bin:suid - Build the SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels
