@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
+PATCHSET="4"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://files.pythonhosted.org/packages/ed/7b/bbf89ca71e722b7f9464ebffe4b5ee20a9e5c9a555a56e2d3914bb9119a6/setuptools-44.1.0.zip
@@ -70,6 +70,7 @@ COMMON_DEPEND="
 	)
 	sys-apps/dbus:=
 	sys-apps/pciutils:=
+	<sys-libs/glibc-2.33
 	virtual/udev
 	x11-libs/cairo:=
 	x11-libs/gdk-pixbuf:2
@@ -94,7 +95,6 @@ COMMON_DEPEND="
 		)
 	)
 "
-# For nvidia-drivers blocker, see bug #413637 .
 RDEPEND="${COMMON_DEPEND}
 	x11-misc/xdg-utils
 	virtual/opengl
@@ -139,7 +139,7 @@ else
 		dev-libs/libxslt:=
 		>=dev-libs/re2-0.2019.08.01:=
 		>=media-libs/openh264-1.6.0:=
-		system-icu? ( >=dev-libs/icu-68.1:= )
+		system-icu? ( >=dev-libs/icu-69.1:= )
 	"
 	RDEPEND+="${COMMON_DEPEND}"
 	DEPEND+="${COMMON_DEPEND}"
@@ -228,7 +228,7 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-88-compiler.patch"
+		"chromium-91-gtk_util-ternary-operator.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -237,9 +237,7 @@ src_prepare() {
 	local PATCHES=(
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-89-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-91-compiler-r1.patch"
-		"${FILESDIR}/chromium-91-CursorFactory-include.patch"
-		"${FILESDIR}/chromium-91-gtk_util-ternary-operator.patch"
+		"${FILESDIR}/chromium-91-pcscan-vector-types.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
 
@@ -341,6 +339,7 @@ src_prepare() {
 		third_party/flatbuffers
 		third_party/freetype
 		third_party/fusejs
+		third_party/highway
 		third_party/libgifcodec
 		third_party/liburlpattern
 		third_party/libzip
@@ -367,6 +366,7 @@ src_prepare() {
 		third_party/libavif
 		third_party/libgav1
 		third_party/libjingle
+		third_party/libjxl
 		third_party/libphonenumber
 		third_party/libsecret
 		third_party/libsrtp
@@ -424,7 +424,6 @@ src_prepare() {
 		third_party/qcms
 		third_party/rnnoise
 		third_party/s2cellid
-		third_party/schema_org
 		third_party/securemessage
 		third_party/shell-encryption
 		third_party/simplejson
