@@ -1,0 +1,46 @@
+From eb81b80209a0409ba6fc1d797c0629113352c7cf Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 15 Apr 2021 20:15:38 +0000
+Subject: [PATCH] GCC: replace constexpr with inline in frame_sequence_metrics
+
+std::bitset<N>::test() is not constexpr and therefore functions
+using std::bitset<N>::test() can't be constexpr too. Replace
+with inline to avoid multiple linker symbols.
+---
+ cc/metrics/frame_sequence_metrics.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/cc/metrics/frame_sequence_metrics.h b/cc/metrics/frame_sequence_metrics.h
+index 16217e9..236f829 100644
+--- a/cc/metrics/frame_sequence_metrics.h
++++ b/cc/metrics/frame_sequence_metrics.h
+@@ -38,7 +38,7 @@ enum class FrameSequenceTrackerType {
+ using ActiveTrackers =
+     std::bitset<static_cast<size_t>(FrameSequenceTrackerType::kMaxType)>;
+ 
+-constexpr bool IsScrollActive(const ActiveTrackers& trackers) {
++inline bool IsScrollActive(const ActiveTrackers& trackers) {
+   return trackers.test(
+              static_cast<size_t>(FrameSequenceTrackerType::kWheelScroll)) ||
+          trackers.test(
+@@ -47,7 +47,7 @@ constexpr bool IsScrollActive(const ActiveTrackers& trackers) {
+              static_cast<size_t>(FrameSequenceTrackerType::kScrollbarScroll));
+ }
+ 
+-constexpr bool HasMainThreadAnimation(const ActiveTrackers& trackers) {
++inline bool HasMainThreadAnimation(const ActiveTrackers& trackers) {
+   return trackers.test(static_cast<size_t>(
+              FrameSequenceTrackerType::kMainThreadAnimation)) ||
+          trackers.test(
+@@ -57,7 +57,7 @@ constexpr bool HasMainThreadAnimation(const ActiveTrackers& trackers) {
+          trackers.test(static_cast<size_t>(FrameSequenceTrackerType::kRAF));
+ }
+ 
+-constexpr bool HasCompositorThreadAnimation(const ActiveTrackers& trackers) {
++inline bool HasCompositorThreadAnimation(const ActiveTrackers& trackers) {
+   return trackers.test(
+       static_cast<size_t>(FrameSequenceTrackerType::kCompositorAnimation));
+ }
+-- 
+2.26.3
+
