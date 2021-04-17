@@ -14,7 +14,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 PATCHSET="4"
-PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
+PATCHSET_NAME="chromium-91-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://files.pythonhosted.org/packages/ed/7b/bbf89ca71e722b7f9464ebffe4b5ee20a9e5c9a555a56e2d3914bb9119a6/setuptools-44.1.0.zip
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
@@ -40,8 +40,8 @@ COMMON_X_DEPEND="
 	x11-libs/libXrandr:=
 	x11-libs/libXrender:=
 	x11-libs/libXtst:=
-	x11-libs/libXScrnSaver:=
 	x11-libs/libxcb:=
+	x11-libs/libxshmfence:=
 	vaapi? ( >=x11-libs/libva-2.7:=[X,drm] )
 "
 
@@ -68,6 +68,7 @@ COMMON_DEPEND="
 		)
 		>=media-libs/opus-1.3.1:=
 	)
+	net-misc/curl[ssl]
 	sys-apps/dbus:=
 	sys-apps/pciutils:=
 	<sys-libs/glibc-2.33
@@ -238,7 +239,10 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-89-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-91-system-icu.patch"
-		"${FILESDIR}/chromium-91-pcscan-vector-types.patch"
+		"${FILESDIR}/chromium-92-frame_sequence_metrics-constexpr.patch"
+		"${FILESDIR}/chromium-92-third_party_data_remover-const.patch"
+		"${FILESDIR}/chromium-92-BoxPreflightCheckApiCallFlow-ostream.patch"
+		"${FILESDIR}/chromium-92-ExtensionRequestReportGenerator-include.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
 
@@ -314,6 +318,7 @@ src_prepare() {
 		third_party/dav1d
 		third_party/dawn
 		third_party/dawn/third_party/khronos
+		third_party/dawn/third_party/tint
 		third_party/depot_tools
 		third_party/devscripts
 		third_party/devtools-frontend
@@ -446,7 +451,6 @@ src_prepare() {
 		third_party/tflite/src/third_party/eigen3
 		third_party/tflite/src/third_party/fft2d
 		third_party/tflite-support
-		third_party/tint
 		third_party/ruy
 		third_party/ukey2
 		third_party/unrar
@@ -831,6 +835,7 @@ src_install() {
 	fi
 
 	doexe out/Release/chromedriver
+	doexe out/Release/crashpad_handler
 
 	local sedargs=( -e
 			"s:/usr/lib/:/usr/$(get_libdir)/:g;
@@ -913,10 +918,9 @@ pkg_postinst() {
 	readme.gentoo_print_elog
 
 	if use vaapi; then
-		elog "VA-API is disabled by default at runtime. Either enable it"
-		elog "by navigating to chrome://flags/#enable-accelerated-video-decode"
-		elog "inside Chromium or add --enable-accelerated-video-decode"
-		elog "to CHROMIUM_FLAGS in /etc/chromium/default."
+		elog "VA-API is disabled by default at runtime. You have to enable it"
+		elog "by adding --enable-features=VaapiVideoDecoder to CHROMIUM_FLAGS"
+		elog "in /etc/chromium/default."
 	fi
 	if use screencast; then
 		elog "Screencast is disabled by default at runtime. Either enable it"
