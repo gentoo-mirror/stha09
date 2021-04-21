@@ -1,0 +1,29 @@
+From d43026fdf61d765d9d26598a79a5de6c7e9fb0be Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 21 Apr 2021 18:25:05 +0000
+Subject: [PATCH] GCC: add explicit alias for GetDownloadsCallback
+
+GCC finds two GetDownloadsCallback definitions, one in
+DownloadShelfHandler and one in PageHandler. Add an alias
+in DownloadShelfPageHandler for GetDownloadsCallback to avoid
+confusion.
+---
+ .../ui/webui/download_shelf/download_shelf_page_handler.h       | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/chrome/browser/ui/webui/download_shelf/download_shelf_page_handler.h b/chrome/browser/ui/webui/download_shelf/download_shelf_page_handler.h
+index e7dd0b7..bd367c4 100644
+--- a/chrome/browser/ui/webui/download_shelf/download_shelf_page_handler.h
++++ b/chrome/browser/ui/webui/download_shelf/download_shelf_page_handler.h
+@@ -20,6 +20,8 @@ class DownloadShelfUI;
+ class DownloadShelfPageHandler : public download_shelf::mojom::PageHandler,
+                                  public DownloadShelfHandler {
+  public:
++  using GetDownloadsCallback = DownloadShelfHandler::GetDownloadsCallback;
++
+   DownloadShelfPageHandler(
+       mojo::PendingReceiver<download_shelf::mojom::PageHandler> receiver,
+       mojo::PendingRemote<download_shelf::mojom::Page> page,
+-- 
+2.26.3
+
