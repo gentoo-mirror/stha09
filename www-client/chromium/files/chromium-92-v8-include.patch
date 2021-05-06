@@ -1,0 +1,28 @@
+From 6e7f27746174ec66cc9e270fae23d47d96bc1f02 Mon Sep 17 00:00:00 2001
+From: Milad Fa <mfarazma@redhat.com>
+Date: Wed, 05 May 2021 08:59:05 -0400
+Subject: [PATCH] [wasm] Add missing header needed for std::unique_ptr
+
+This compilation error might happen without the header:
+error: 'unique_ptr' in namespace 'std' does not name a template type
+
+Change-Id: I103ce0496eff5dda85557410b4e7863c1c65aad0
+Reviewed-on: https://chromium-review.googlesource.com/c/v8/v8/+/2873446
+Reviewed-by: Manos Koukoutos <manoskouk@chromium.org>
+Commit-Queue: Milad Fa <mfarazma@redhat.com>
+Cr-Commit-Position: refs/heads/master@{#74388}
+---
+
+diff --git a/v8/src/wasm/wasm-init-expr.h b/v8/src/wasm/wasm-init-expr.h
+index 5c0ffd5..39fc1a7 100644
+--- a/v8/src/wasm/wasm-init-expr.h
++++ b/v8/src/wasm/wasm-init-expr.h
+@@ -9,6 +9,8 @@
+ #ifndef V8_WASM_WASM_INIT_EXPR_H_
+ #define V8_WASM_WASM_INIT_EXPR_H_
+ 
++#include <memory>
++
+ #include "src/wasm/value-type.h"
+ 
+ namespace v8 {
