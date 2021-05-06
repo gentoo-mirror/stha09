@@ -1,0 +1,37 @@
+From c3436418bd95f91960bf818a1bac6caf0ee5187f Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 6 May 2021 07:36:35 +0000
+Subject: [PATCH] IWYU: add includes for std::numeric_limits and UCHAR
+
+---
+ base/strings/string_piece.cc | 1 +
+ base/strings/string_piece.h  | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/base/strings/string_piece.cc b/base/strings/string_piece.cc
+index f635f78..790abe4 100644
+--- a/base/strings/string_piece.cc
++++ b/base/strings/string_piece.cc
+@@ -5,6 +5,7 @@
+ #include "base/strings/string_piece.h"
+ 
+ #include <algorithm>
++#include <climits>
+ #include <limits>
+ #include <ostream>
+ #include <string>
+diff --git a/base/strings/string_piece.h b/base/strings/string_piece.h
+index 1ab2de1..92eaf8f 100644
+--- a/base/strings/string_piece.h
++++ b/base/strings/string_piece.h
+@@ -24,6 +24,7 @@
+ #include <stddef.h>
+ 
+ #include <iosfwd>
++#include <limits>
+ #include <ostream>
+ #include <string>
+ #include <type_traits>
+-- 
+2.26.3
+
