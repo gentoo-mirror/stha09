@@ -1,0 +1,24 @@
+From 6fd71df5d9e9dc82214cf669841410afc83abd2b Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 14 May 2021 10:02:45 +0000
+Subject: [PATCH] IWYU: include mutex for std::mutex
+
+---
+ base/allocator/partition_allocator/starscan/pcscan_internal.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/base/allocator/partition_allocator/starscan/pcscan_internal.h b/base/allocator/partition_allocator/starscan/pcscan_internal.h
+index 2499d68..991add4 100644
+--- a/base/allocator/partition_allocator/starscan/pcscan_internal.h
++++ b/base/allocator/partition_allocator/starscan/pcscan_internal.h
+@@ -6,6 +6,7 @@
+ #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_PCSCAN_INTERNAL_H_
+ 
+ #include <array>
++#include <mutex>
+ #include <unordered_map>
+ 
+ #include "base/allocator/partition_allocator/starscan/metadata_allocator.h"
+-- 
+2.26.3
+
