@@ -1,0 +1,24 @@
+From 5f5420c6cac19957569e1bdea96c7347b3d0fe30 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 15 May 2021 09:51:59 +0000
+Subject: [PATCH] IWYU: add vector for std::vector
+
+---
+ net/url_request/redirect_util.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/url_request/redirect_util.h b/net/url_request/redirect_util.h
+index 9ec0eaf..bad9f60 100644
+--- a/net/url_request/redirect_util.h
++++ b/net/url_request/redirect_util.h
+@@ -6,6 +6,7 @@
+ #define NET_URL_REQUEST_REDIRECT_UTIL_H_
+ 
+ #include <string>
++#include <vector>
+ 
+ #include "base/optional.h"
+ #include "net/base/net_export.h"
+-- 
+2.26.3
+
