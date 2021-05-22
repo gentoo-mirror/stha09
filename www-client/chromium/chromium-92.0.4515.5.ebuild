@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="4"
+PATCHSET="5"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://files.pythonhosted.org/packages/ed/7b/bbf89ca71e722b7f9464ebffe4b5ee20a9e5c9a555a56e2d3914bb9119a6/setuptools-44.1.0.zip
@@ -228,7 +228,6 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-92-platform_thread-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -236,9 +235,7 @@ src_prepare() {
 
 	local PATCHES=(
 		"${WORKDIR}/patches"
-		"${FILESDIR}/chromium-89-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-92-pcscan-include.patch"
-		"${FILESDIR}/chromium-92-StartPresentationContext-incomplete-type.patch"
+		"${FILESDIR}/chromium-92-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
 
@@ -250,8 +247,6 @@ src_prepare() {
 	# adjust python interpreter versions
 	sed -i -e "s|\(^script_executable = \).*|\1\"${EPYTHON}\"|g" .gn || die
 	sed -i -e "s|python2|python2\.7|g" buildtools/linux64/clang-format || die
-	sed -i -e "s|python|python2\.7|g" \
-		third_party/dom_distiller_js/protoc_plugins/json_values_converter.py || die
 
 	local keeplibs=(
 		base/third_party/cityhash
@@ -787,7 +782,7 @@ src_compile() {
 	python_setup
 
 	# https://bugs.gentoo.org/717456
-	# don't append user PYTHONPATH, bug #789021
+	# don't inherit PYTHONPATH from environment, bug #789021
 	local -x PYTHONPATH="${WORKDIR}/setuptools-44.1.0"
 
 	#"${EPYTHON}" tools/clang/scripts/update.py --force-local-build --gcc-toolchain /usr --skip-checkout --use-system-cmake --without-android || die
