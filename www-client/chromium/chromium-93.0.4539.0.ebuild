@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="1"
+PATCHSET="2"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://files.pythonhosted.org/packages/ed/7b/bbf89ca71e722b7f9464ebffe4b5ee20a9e5c9a555a56e2d3914bb9119a6/setuptools-44.1.0.zip
@@ -109,7 +109,6 @@ BDEPEND="
 	>=app-arch/gzip-1.7
 	app-arch/unzip
 	dev-lang/perl
-	dev-lang/python:2.7[xml]
 	>=dev-util/gn-0.1807
 	dev-vcs/git
 	>=dev-util/gperf-3.0.3
@@ -228,6 +227,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
+		"chromium-93-AXPropertyNode-private.patch"
+		"chromium-93-site_settings_helper-initialzation.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -236,7 +237,7 @@ src_prepare() {
 	local PATCHES=(
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-92-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-93-site_settings_helper-initialzation.patch"
+		"${FILESDIR}/chromium-93-ExecutionState-const.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
 
@@ -256,9 +257,8 @@ src_prepare() {
 	mkdir -p third_party/node/linux/node-linux-x64/bin || die
 	ln -s "${EPREFIX}"/usr/bin/node third_party/node/linux/node-linux-x64/bin/node || die
 
-	# adjust python interpreter versions
+	# adjust python interpreter version
 	sed -i -e "s|\(^script_executable = \).*|\1\"${EPYTHON}\"|g" .gn || die
-	sed -i -e "s|python2|python2\.7|g" buildtools/linux64/clang-format || die
 
 	# bundled highway library does not support arm64 with GCC
 	if use arm64; then
@@ -290,7 +290,6 @@ src_prepare() {
 		third_party/angle/src/common/third_party/base
 		third_party/angle/src/common/third_party/smhasher
 		third_party/angle/src/common/third_party/xxhash
-		third_party/angle/src/third_party/compiler
 		third_party/angle/src/third_party/libXNVCtrl
 		third_party/angle/src/third_party/trace_event
 		third_party/angle/src/third_party/volk
@@ -486,7 +485,6 @@ src_prepare() {
 		third_party/xcbproto
 		third_party/zxcvbn-cpp
 		third_party/zlib/google
-		tools/grit/third_party/six
 		url/third_party/mozilla
 		v8/src/third_party/siphash
 		v8/src/third_party/valgrind
@@ -656,6 +654,9 @@ src_configure() {
 
 	# Disable pseudolocales, only used for testing
 	myconf_gn+=" enable_pseudolocales=false"
+
+	# Disable code formating of generated files
+	myconf_gn+=" blink_enable_generated_code_formatting=false"
 
 	ffmpeg_branding="$(usex proprietary-codecs Chrome Chromium)"
 	myconf_gn+=" proprietary_codecs=$(usex proprietary-codecs true false)"
