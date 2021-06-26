@@ -59,6 +59,10 @@ RDEPEND="
 
 S="${WORKDIR}"
 
+pkg_setup() {
+	chromium_suid_sandbox_check_kernel_config
+}
+
 src_prepare() {
 	default
 	sed -i '/OnlyShowIn=/d' usr/share/applications/${PN}.desktop || die
