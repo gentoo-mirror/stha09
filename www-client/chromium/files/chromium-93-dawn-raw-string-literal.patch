@@ -1,0 +1,222 @@
+From 3df142f41d3ee6613108a346e72357c1de93ff4d Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 27 Jun 2021 10:26:48 +0000
+Subject: [PATCH] GCC: replace C++ raw string literals in
+ CopyTextureForBrowserHelper
+
+It is a known GCC issue that multiline C++11 raw string literals are not
+working, see https://gcc.gnu.org/PR55971 for details.
+---
+ .../CopyTextureForBrowserHelper.cpp           | 196 +++++++++---------
+ 1 file changed, 98 insertions(+), 98 deletions(-)
+
+diff --git a/third_party/dawn/src/dawn_native/CopyTextureForBrowserHelper.cpp b/third_party/dawn/src/dawn_native/CopyTextureForBrowserHelper.cpp
+index 8dbc9aa..117d536 100644
+--- a/third_party/dawn/src/dawn_native/CopyTextureForBrowserHelper.cpp
++++ b/third_party/dawn/src/dawn_native/CopyTextureForBrowserHelper.cpp
+@@ -37,104 +37,104 @@ namespace dawn_native {
+ // fragment shaders into one shader source. Now it blocks by
+ // crbug.com/dawn/947 and crbug.com/tint/915
+ #define HEADER \
+-    R"(
+-            [[block]] struct Uniforms {
+-                u_scale: vec2<f32>;
+-                u_offset: vec2<f32>;
+-                u_alphaOp: u32;
+-            };
+-    )"
+-
+-        static const char sCopyTextureForBrowserVertex[] = HEADER R"(
+-            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+-
+-            struct VertexOutputs {
+-                [[location(0)]] texcoords : vec2<f32>;
+-                [[builtin(position)]] position : vec4<f32>;
+-            };
+-
+-            [[stage(vertex)]] fn main(
+-                [[builtin(vertex_index)]] VertexIndex : u32
+-            ) -> VertexOutputs {
+-                var texcoord = array<vec2<f32>, 3>(
+-                    vec2<f32>(-0.5, 0.0),
+-                    vec2<f32>( 1.5, 0.0),
+-                    vec2<f32>( 0.5, 2.0));
+-
+-                var output : VertexOutputs;
+-                output.position = vec4<f32>((texcoord[VertexIndex] * 2.0 - vec2<f32>(1.0, 1.0)), 0.0, 1.0);
+-
+-                // Y component of scale is calculated by the copySizeHeight / textureHeight. Only
+-                // flipY case can get negative number.
+-                var flipY = uniforms.u_scale.y < 0.0;
+-
+-                // Texture coordinate takes top-left as origin point. We need to map the
+-                // texture to triangle carefully.
+-                if (flipY) {
+-                    // We need to get the mirror positions(mirrored based on y = 0.5) on flip cases.
+-                    // Adopt transform to src texture and then mapping it to triangle coord which
+-                    // do a +1 shift on Y dimension will help us got that mirror position perfectly.
+-                    output.texcoords = (texcoord[VertexIndex] * uniforms.u_scale + uniforms.u_offset) *
+-                        vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0);
+-                } else {
+-                    // For the normal case, we need to get the exact position.
+-                    // So mapping texture to triangle firstly then adopt the transform.
+-                    output.texcoords = (texcoord[VertexIndex] *
+-                        vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0)) *
+-                        uniforms.u_scale + uniforms.u_offset;
+-                }
+-
+-                return output;
+-            }
+-        )";
+-
+-        static const char sCopyTextureForBrowserFragment[] = HEADER R"(
+-            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+-            [[binding(1), group(0)]] var mySampler: sampler;
+-            [[binding(2), group(0)]] var myTexture: texture_2d<f32>;
+-
+-            [[stage(fragment)]] fn main(
+-                [[location(0)]] texcoord : vec2<f32>
+-            ) -> [[location(0)]] vec4<f32> {
+-                // Clamp the texcoord and discard the out-of-bound pixels.
+-                var clampedTexcoord =
+-                    clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
+-                if (!all(clampedTexcoord == texcoord)) {
+-                    discard;
+-                }
+-
+-                // Swizzling of texture formats when sampling / rendering is handled by the
+-                // hardware so we don't need special logic in this shader. This is covered by tests.
+-                var srcColor = textureSample(myTexture, mySampler, texcoord);
+-
+-                // Handle alpha. Alpha here helps on the source content and dst content have
+-                // different alpha config. There are three possible ops: DontChange, Premultiply
+-                // and Unpremultiply.
+-                // TODO(crbug.com/1217153): if wgsl support `constexpr` and allow it
+-                // to be case selector, Replace 0u/1u/2u with a constexpr variable with
+-                // meaningful name.
+-                switch(uniforms.u_alphaOp) {
+-                    case 0u: { // AlphaOp: DontChange
+-                        break;
+-                    }
+-                    case 1u: { // AlphaOp: Premultiply
+-                        srcColor = vec4<f32>(srcColor.rgb * srcColor.a, srcColor.a);
+-                        break;
+-                    }
+-                    case 2u: { // AlphaOp: Unpremultiply
+-                        if (srcColor.a != 0.0) {
+-                            srcColor = vec4<f32>(srcColor.rgb / srcColor.a, srcColor.a);
+-                        }
+-                        break;
+-                    }
+-                    default: {
+-                        break;
+-                    }
+-                }
+-
+-                return srcColor;
+-            }
+-        )";
++    "\n\
++            [[block]] struct Uniforms {\n\
++                u_scale: vec2<f32>;\n\
++                u_offset: vec2<f32>;\n\
++                u_alphaOp: u32;\n\
++            };\n\
++    "
++
++        static const char sCopyTextureForBrowserVertex[] = HEADER "\n\
++            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;\n\
++\n\
++            struct VertexOutputs {\n\
++                [[location(0)]] texcoords : vec2<f32>;\n\
++                [[builtin(position)]] position : vec4<f32>;\n\
++            };\n\
++\n\
++            [[stage(vertex)]] fn main(\n\
++                [[builtin(vertex_index)]] VertexIndex : u32\n\
++            ) -> VertexOutputs {\n\
++                var texcoord = array<vec2<f32>, 3>(\n\
++                    vec2<f32>(-0.5, 0.0),\n\
++                    vec2<f32>( 1.5, 0.0),\n\
++                    vec2<f32>( 0.5, 2.0));\n\
++\n\
++                var output : VertexOutputs;\n\
++                output.position = vec4<f32>((texcoord[VertexIndex] * 2.0 - vec2<f32>(1.0, 1.0)), 0.0, 1.0);\n\
++\n\
++                // Y component of scale is calculated by the copySizeHeight / textureHeight. Only\n\
++                // flipY case can get negative number.\n\
++                var flipY = uniforms.u_scale.y < 0.0;\n\
++\n\
++                // Texture coordinate takes top-left as origin point. We need to map the\n\
++                // texture to triangle carefully.\n\
++                if (flipY) {\n\
++                    // We need to get the mirror positions(mirrored based on y = 0.5) on flip cases.\n\
++                    // Adopt transform to src texture and then mapping it to triangle coord which\n\
++                    // do a +1 shift on Y dimension will help us got that mirror position perfectly.\n\
++                    output.texcoords = (texcoord[VertexIndex] * uniforms.u_scale + uniforms.u_offset) *\n\
++                        vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0);\n\
++                } else {\n\
++                    // For the normal case, we need to get the exact position.\n\
++                    // So mapping texture to triangle firstly then adopt the transform.\n\
++                    output.texcoords = (texcoord[VertexIndex] *\n\
++                        vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0)) *\n\
++                        uniforms.u_scale + uniforms.u_offset;\n\
++                }\n\
++\n\
++                return output;\n\
++            }\n\
++        ";
++
++        static const char sCopyTextureForBrowserFragment[] = HEADER "\n\
++            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;\n\
++            [[binding(1), group(0)]] var mySampler: sampler;\n\
++            [[binding(2), group(0)]] var myTexture: texture_2d<f32>;\n\
++\n\
++            [[stage(fragment)]] fn main(\n\
++                [[location(0)]] texcoord : vec2<f32>\n\
++            ) -> [[location(0)]] vec4<f32> {\n\
++                // Clamp the texcoord and discard the out-of-bound pixels.\n\
++                var clampedTexcoord =\n\
++                    clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));\n\
++                if (!all(clampedTexcoord == texcoord)) {\n\
++                    discard;\n\
++                }\n\
++\n\
++                // Swizzling of texture formats when sampling / rendering is handled by the\n\
++                // hardware so we don't need special logic in this shader. This is covered by tests.\n\
++                var srcColor = textureSample(myTexture, mySampler, texcoord);\n\
++\n\
++                // Handle alpha. Alpha here helps on the source content and dst content have\n\
++                // different alpha config. There are three possible ops: DontChange, Premultiply\n\
++                // and Unpremultiply.\n\
++                // TODO(crbug.com/1217153): if wgsl support `constexpr` and allow it\n\
++                // to be case selector, Replace 0u/1u/2u with a constexpr variable with\n\
++                // meaningful name.\n\
++                switch(uniforms.u_alphaOp) {\n\
++                    case 0u: { // AlphaOp: DontChange\n\
++                        break;\n\
++                    }\n\
++                    case 1u: { // AlphaOp: Premultiply\n\
++                        srcColor = vec4<f32>(srcColor.rgb * srcColor.a, srcColor.a);\n\
++                        break;\n\
++                    }\n\
++                    case 2u: { // AlphaOp: Unpremultiply\n\
++                        if (srcColor.a != 0.0) {\n\
++                            srcColor = vec4<f32>(srcColor.rgb / srcColor.a, srcColor.a);\n\
++                        }\n\
++                        break;\n\
++                    }\n\
++                    default: {\n\
++                        break;\n\
++                    }\n\
++                }\n\
++\n\
++                return srcColor;\n\
++            }\n\
++        ";
+ 
+         struct Uniform {
+             float scaleX;
+-- 
+2.31.1
+
