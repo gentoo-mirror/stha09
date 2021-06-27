@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
+PATCHSET="4"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
@@ -22,7 +22,7 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="component-build cups cpu_flags_arm_neon +hangouts headless +js-type-check kerberos official pic +proprietary-codecs pulseaudio screencast selinux +suid system-ffmpeg +system-icu vaapi wayland widevine"
+IUSE="component-build cups cpu_flags_arm_neon +hangouts headless +js-type-check kerberos official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-icu vaapi wayland widevine"
 REQUIRED_USE="
 	component-build? ( !suid )
 	screencast? ( wayland )
@@ -232,10 +232,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-93-ExecutionState-const.patch"
-		"chromium-93-JsepTransportCollection-ostream.patch"
-		"chromium-93-tint-include.patch"
-		"chromium-93-CrxInstaller-const.patch"
+		"chromium-93-PendingMessage-constructor.patch"
+		"chromium-93-model_execution_manager-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -245,11 +243,8 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-92-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
-		"${FILESDIR}/chromium-93-system-ffmpeg.patch"
-		"${FILESDIR}/chromium-93-model_execution_manager-include.patch"
-		"${FILESDIR}/chromium-93-PendingMessage-constructor.patch"
+		"${FILESDIR}/chromium-93-dawn-raw-string-literal.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
-		"${FILESDIR}/chromium-swiftshader-export.patch"
 	)
 
 	# seccomp sandbox is broken if compiled against >=sys-libs/glibc-2.33, bug #769989
