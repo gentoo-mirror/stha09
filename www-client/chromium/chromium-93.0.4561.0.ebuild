@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="4"
+PATCHSET="5"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
@@ -232,8 +232,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-93-PendingMessage-constructor.patch"
-		"chromium-93-model_execution_manager-include.patch"
+		"chromium-swiftshader-export.patch"
+		"chromium-93-dawn-raw-string-literal.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -243,7 +243,7 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-92-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
-		"${FILESDIR}/chromium-93-dawn-raw-string-literal.patch"
+		"${FILESDIR}/chromium-93-std-vector-include.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
 
