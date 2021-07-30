@@ -1,0 +1,29 @@
+From 7b04653eba6c67ebc586a9f08917057e78272a7e Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 28 Jul 2021 20:33:29 +0000
+Subject: [PATCH] GCC: move WARN_USED_RESULT in lambda in ConversionStorageSql
+
+GCC 9.3 only allows GNU attributes between [] and () in lambda
+expressions. See https://gcc.gnu.org/PR90333 for details.
+---
+ content/browser/conversions/conversion_storage_sql.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/content/browser/conversions/conversion_storage_sql.cc b/content/browser/conversions/conversion_storage_sql.cc
+index 3210940..78c46ce 100644
+--- a/content/browser/conversions/conversion_storage_sql.cc
++++ b/content/browser/conversions/conversion_storage_sql.cc
+@@ -683,8 +683,8 @@ void ConversionStorageSql::DeleteExpiredImpressions() {
+   const int kMaxDeletesPerBatch = 100;
+ 
+   auto delete_impressions_from_paged_select =
+-      [this](sql::Statement& statement)
+-          VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT -> bool {
++      [this] WARN_UNUSED_RESULT (sql::Statement& statement)
++          VALID_CONTEXT_REQUIRED(sequence_checker_) -> bool {
+     while (true) {
+       std::vector<int64_t> impression_ids;
+       while (statement.Step()) {
+-- 
+2.31.1
+
