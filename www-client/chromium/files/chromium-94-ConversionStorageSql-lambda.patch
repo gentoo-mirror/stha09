@@ -4,7 +4,8 @@ Date: Wed, 28 Jul 2021 20:33:29 +0000
 Subject: [PATCH] GCC: move WARN_USED_RESULT in lambda in ConversionStorageSql
 
 GCC 9.3 only allows GNU attributes between [] and () in lambda
-expressions. See https://gcc.gnu.org/PR90333 for details.
+expressions. See https://gcc.gnu.org/PR90333 for details. However,
+clang allows attributes after () only.
 ---
  content/browser/conversions/conversion_storage_sql.cc | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
@@ -13,17 +14,25 @@ diff --git a/content/browser/conversions/conversion_storage_sql.cc b/content/bro
 index 3210940..78c46ce 100644
 --- a/content/browser/conversions/conversion_storage_sql.cc
 +++ b/content/browser/conversions/conversion_storage_sql.cc
-@@ -683,8 +683,8 @@ void ConversionStorageSql::DeleteExpiredImpressions() {
+@@ -688,9 +688,18 @@
+ bool ConversionStorageSql::DeleteExpiredImpressions() {
    const int kMaxDeletesPerBatch = 100;
  
-   auto delete_impressions_from_paged_select =
+-  auto delete_impressions_from_paged_select =
 -      [this](sql::Statement& statement)
 -          VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT -> bool {
-+      [this] WARN_UNUSED_RESULT (sql::Statement& statement)
-+          VALID_CONTEXT_REQUIRED(sequence_checker_) -> bool {
++  // GCC accepts attribute between [] and () only
++  // clang accepts attribute after () only
++  auto delete_impressions_from_paged_select = [this]
++#if defined(COMPILER_GCC) && !defined(__clang__)
++      WARN_UNUSED_RESULT
++#endif
++      (sql::Statement & statement) VALID_CONTEXT_REQUIRED(sequence_checker_)
++#if !defined(COMPILER_GCC) || defined(__clang__)
++          WARN_UNUSED_RESULT
++#endif
++
++      -> bool {
      while (true) {
        std::vector<int64_t> impression_ids;
        while (statement.Step()) {
--- 
-2.31.1
-
