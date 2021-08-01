@@ -1,0 +1,25 @@
+From fcdbeca47dcb79a20d6faca4edca79446d24c54f Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 31 Jul 2021 13:10:37 +0000
+Subject: [PATCH] IWYU: add atomic for std::atomic in time_override
+
+---
+ base/time/time_override.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/base/time/time_override.h b/base/time/time_override.h
+index edb8483..c4cb670 100644
+--- a/base/time/time_override.h
++++ b/base/time/time_override.h
+@@ -5,6 +5,8 @@
+ #ifndef BASE_TIME_TIME_OVERRIDE_H_
+ #define BASE_TIME_TIME_OVERRIDE_H_
+ 
++#include <atomic>
++
+ #include "base/base_export.h"
+ #include "base/macros.h"
+ #include "base/time/time.h"
+-- 
+2.31.1
+
