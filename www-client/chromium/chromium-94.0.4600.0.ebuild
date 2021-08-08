@@ -13,8 +13,8 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="6"
-PATCHSET_NAME="chromium-93-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
 	arm64? ( https://github.com/google/highway/archive/refs/tags/0.12.1.tar.gz -> highway-0.12.1.tar.gz )"
@@ -197,8 +197,8 @@ pre_build_checks() {
 	fi
 
 	# Check build requirements, bug #541816 and bug #471810 .
-	CHECKREQS_MEMORY="3G"
-	CHECKREQS_DISK_BUILD="8G"
+	CHECKREQS_MEMORY="4G"
+	CHECKREQS_DISK_BUILD="9G"
 	if ( shopt -s extglob; is-flagq '-g?(gdb)?([1-9])' ); then
 		if use custom-cflags || use component-build; then
 			CHECKREQS_DISK_BUILD="25G"
@@ -232,14 +232,10 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-93-BluetoothLowEnergyScanFilter-include.patch"
-		"chromium-93-ClassProperty-include.patch"
-		"chromium-93-ContextSet-permissive.patch"
-		"chromium-93-DevToolsEmbedderMessageDispatcher-include.patch"
-		"chromium-93-FormForest-constexpr.patch"
-		"chromium-93-HashPasswordManager-include.patch"
-		"chromium-93-ScopedTestDialogAutoConfirm-include.patch"
-		"chromium-93-pdfium-include.patch"
+		"chromium-94-LogicalOffset-include.patch"
+		"chromium-94-NGBfcOffset-include.patch"
+		"chromium-94-h264_parser-include.patch"
+		"chromium-94-compiler.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -249,12 +245,9 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
-		"${FILESDIR}/chromium-94-h264_parser-include.patch"
-		"${FILESDIR}/chromium-94-ConversionStorageSql-lambda.patch"
-		"${FILESDIR}/chromium-94-no-stack-protector.patch"
-		"${FILESDIR}/chromium-94-CanonicalCookie-incomplete-type.patch"
-		"${FILESDIR}/chromium-94-LogicalOffset-include.patch"
-		"${FILESDIR}/chromium-94-NGBfcOffset-include.patch"
+		"${FILESDIR}/chromium-94-printing-include.patch"
+		"${FILESDIR}/chromium-94-compiler.patch"
+		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
 
@@ -672,13 +665,14 @@ src_configure() {
 	# Set up Google API keys, see http://www.chromium.org/developers/how-tos/api-keys .
 	# Note: these are for Gentoo use ONLY. For your own distribution,
 	# please get your own set of keys. Feel free to contact chromium@gentoo.org
-	# for more info.
+	# for more info. The OAuth2 credentials, however, have been left out.
+	# Those OAuth2 credentials have been broken for quite some time anyway.
+	# Instead we apply a patch to use the --oauth2-client-id= and
+	# --oauth2-client-secret= switches for setting GOOGLE_DEFAULT_CLIENT_ID and
+	# GOOGLE_DEFAULT_CLIENT_SECRET at runtime. This allows signing into
+	# Chromium without baked-in values.
 	local google_api_key="AIzaSyDEAOvatFo0eTgsV_ZlEzx0ObmepsMzfAc"
-	local google_default_client_id="329227923882.apps.googleusercontent.com"
-	local google_default_client_secret="vgKG0NNv7GoDpbtoFNLxCUXu"
 	myconf_gn+=" google_api_key=\"${google_api_key}\""
-	myconf_gn+=" google_default_client_id=\"${google_default_client_id}\""
-	myconf_gn+=" google_default_client_secret=\"${google_default_client_secret}\""
 	local myarch="$(tc-arch)"
 
 	# Avoid CFLAGS problems, bug #352457, bug #390147.
@@ -865,7 +859,7 @@ src_install() {
 	fi
 
 	doexe out/Release/chromedriver
-	doexe out/Release/crashpad_handler
+	doexe out/Release/chrome_crashpad_handler
 
 	local sedargs=( -e
 			"s:/usr/lib/:/usr/$(get_libdir)/:g;
