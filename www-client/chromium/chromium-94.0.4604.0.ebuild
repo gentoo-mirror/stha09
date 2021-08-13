@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="1"
+PATCHSET="2"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
@@ -29,7 +29,7 @@ REQUIRED_USE="
 "
 
 COMMON_X_DEPEND="
-	media-libs/mesa:=[gbm]
+	media-libs/mesa:=[gbm(+)]
 	x11-libs/libX11:=
 	x11-libs/libXcomposite:=
 	x11-libs/libXcursor:=
@@ -55,8 +55,6 @@ COMMON_DEPEND="
 	>=dev-libs/nss-3.26:=
 	>=media-libs/alsa-lib-1.0.19:=
 	media-libs/fontconfig:=
-	>=media-libs/freetype-2.11.0:=
-	>=media-libs/harfbuzz-2.4.0:0=[icu(-)]
 	media-libs/libjpeg-turbo:=
 	media-libs/libpng:=
 	pulseaudio? ( media-sound/pulseaudio:= )
@@ -232,10 +230,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-94-LogicalOffset-include.patch"
-		"chromium-94-NGBfcOffset-include.patch"
-		"chromium-94-h264_parser-include.patch"
-		"chromium-94-compiler.patch"
+		"chromium-94-Database-strlen.patch"
+		"chromium-94-no-stack-protector.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -245,8 +241,6 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
-		"${FILESDIR}/chromium-94-printing-include.patch"
-		"${FILESDIR}/chromium-94-compiler.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
@@ -362,7 +356,7 @@ src_prepare() {
 		third_party/google_input_tools/third_party/closure_library
 		third_party/google_input_tools/third_party/closure_library/third_party/closure
 		third_party/googletest
-		third_party/harfbuzz-ng/utils
+		third_party/harfbuzz-ng
 		third_party/hunspell
 		third_party/iccjpeg
 		third_party/inspector_protocol
@@ -599,7 +593,8 @@ src_configure() {
 	local gn_system_libraries=(
 		flac
 		fontconfig
-		freetype
+		# requires unreleased features
+		#freetype
 		# Need harfbuzz_from_pkgconfig target
 		#harfbuzz-ng
 		libdrm
@@ -625,7 +620,8 @@ src_configure() {
 	build/linux/unbundle/replace_gn_files.py --system-libraries "${gn_system_libraries[@]}" || die
 
 	# See dependency logic in third_party/BUILD.gn
-	myconf_gn+=" use_system_harfbuzz=true"
+	# Depends on unreleased harfbuzz features
+	# myconf_gn+=" use_system_harfbuzz=true"
 
 	# Disable deprecated libgnome-keyring dependency, bug #713012
 	myconf_gn+=" use_gnome_keyring=false"
