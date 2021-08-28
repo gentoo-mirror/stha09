@@ -1,0 +1,45 @@
+From 3b75dd27fa2b7b24ab9fcfc0073b34fb6d6522b2 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 28 Aug 2021 12:00:35 +0000
+Subject: [PATCH] GCC: use HAS_BUILTIN in bit_cast
+
+__has_builtin might not be available in some compiler versions. Use
+HAS_BUILTIN defined in compiler_specific.h instead.
+---
+ base/bit_cast.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/base/bit_cast.h b/base/bit_cast.h
+index 9dbc246..61446af 100644
+--- a/base/bit_cast.h
++++ b/base/bit_cast.h
+@@ -5,7 +5,9 @@
+ #ifndef BASE_BIT_CAST_H_
+ #define BASE_BIT_CAST_H_
+ 
+-#if !__has_builtin(__builtin_bit_cast)
++#include "base/compiler_specific.h"
++
++#if !HAS_BUILTIN(__builtin_bit_cast)
+ #include <string.h>
+ #include "base/template_util.h"
+ #endif
+@@ -14,13 +16,13 @@
+ // It morally does what `*reinterpret_cast<Dest*>(&source)` does, but the cast/deref pair
+ // is undefined behavior, while bit_cast<>() isn't.
+ template <class Dest, class Source>
+-#if __has_builtin(__builtin_bit_cast)
++#if HAS_BUILTIN(__builtin_bit_cast)
+ constexpr
+ #else
+ inline
+ #endif
+ Dest bit_cast(const Source& source) {
+-#if __has_builtin(__builtin_bit_cast)
++#if HAS_BUILTIN(__builtin_bit_cast)
+   // TODO(thakis): Keep only this codepath once nacl is gone or updated.
+   return __builtin_bit_cast(Dest, source);
+ #else
+-- 
+2.31.1
+
