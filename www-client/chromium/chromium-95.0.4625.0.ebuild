@@ -13,8 +13,8 @@ inherit check-reqs chromium-2 desktop flag-o-matic multilib ninja-utils pax-util
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
-PATCHSET_NAME="chromium-94-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
@@ -231,8 +231,10 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-90-ruy-include.patch"
-		"chromium-94-CustomSpaces-include.patch"
+		"chromium-95-ConversionStorageSql-lambda.patch"
+		"chromium-95-PageDiscarder-const.patch"
+		"chromium-95-ReservationOffsetTable-include.patch"
+		"chromium-95-breadcrumbs-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -242,10 +244,7 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
-		"${FILESDIR}/chromium-95-breadcrumbs-include.patch"
-		"${FILESDIR}/chromium-95-ReservationOffsetTable-include.patch"
-		"${FILESDIR}/chromium-95-BucketInfo-noexcept.patch"
-		"${FILESDIR}/chromium-95-PageDiscarder-const.patch"
+		"${FILESDIR}/chromium-95-bit_cast-has_builtin.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
@@ -573,6 +572,9 @@ src_configure() {
 	# GN needs explicit config for Debug/Release as opposed to inferring it from build directory.
 	myconf_gn+=" is_debug=false"
 
+	# make DCHECK configurable at runtime for non-official builds.
+	myconf_gn+=" dcheck_is_configurable=$(usex official false true)"
+
 	# Component build isn't generally intended for use by end users. It's mostly useful
 	# for development and debugging.
 	myconf_gn+=" is_component_build=$(usex component-build true false)"
@@ -747,11 +749,6 @@ src_configure() {
 
 	# Chromium relies on this, but was disabled in >=clang-10, crbug.com/1042470
 	append-cxxflags $(test-flags-CXX -flax-vector-conversions=all)
-
-	# highway/libjxl relies on this with arm64
-	if use arm64 && tc-is-gcc; then
-		append-cxxflags -flax-vector-conversions
-	fi
 
 	# Disable unknown warning message from clang.
 	tc-is-clang && append-flags -Wno-unknown-warning-option
