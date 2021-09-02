@@ -49,7 +49,7 @@ RDEPEND="
 	media-libs/alsa-lib
 	media-libs/flac
 	media-libs/fontconfig
-	media-libs/freetype
+	>=media-libs/freetype-2.11.0
 	media-libs/harfbuzz[icu(-)]
 	media-libs/libjpeg-turbo
 	media-libs/libpng
