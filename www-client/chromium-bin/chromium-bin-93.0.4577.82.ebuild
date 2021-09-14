@@ -16,7 +16,6 @@ MY_P=${P}-1
 
 SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common.tar.xz
 	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-l10n.tar.xz
-	devtools? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-resources.tar.xz )
 	amd64? (
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common-x86_64.tar.xz
 		wayland? ( https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-wayland-x86_64.tar.xz )
@@ -31,7 +30,7 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="-* ~amd64 ~x86"
-IUSE="cpu_flags_x86_sse2 devtools selinux suid +swiftshader wayland widevine"
+IUSE="cpu_flags_x86_sse2 selinux suid +swiftshader wayland widevine"
 
 RDEPEND="
 	app-accessibility/at-spi2-atk:2
