@@ -48,19 +48,13 @@ RDEPEND="
 	media-libs/alsa-lib
 	media-libs/flac
 	media-libs/fontconfig
-	>=media-libs/freetype-2.11.0
-	media-libs/harfbuzz[icu(-)]
+	>=media-libs/freetype-2.11.0-r1
 	media-libs/libjpeg-turbo
 	media-libs/libpng
 	media-libs/libwebp
 	media-libs/mesa[gbm(+)]
 	media-libs/openh264
 	media-libs/opus
-	>=media-video/ffmpeg-4.3
-	|| (
-		>=media-video/ffmpeg-4.3[-samba]
-		net-fs/samba[-debug(-)]
-	)
 	net-print/cups
 	sys-apps/dbus
 	>=sys-devel/gcc-9.3.0
