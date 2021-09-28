@@ -1,0 +1,24 @@
+From bcaa6d4556f50a23ba85d54b4d9837605f30f240 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 28 Sep 2021 13:18:11 +0000
+Subject: [PATCH] IWYU: add vector for std::vector in LinuxInputMethodContext
+
+---
+ ui/base/ime/linux/linux_input_method_context.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/base/ime/linux/linux_input_method_context.h b/ui/base/ime/linux/linux_input_method_context.h
+index 7bd85a1..65c3846 100644
+--- a/ui/base/ime/linux/linux_input_method_context.h
++++ b/ui/base/ime/linux/linux_input_method_context.h
+@@ -6,6 +6,7 @@
+ #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
+ 
+ #include <string>
++#include <vector>
+ 
+ #include "base/component_export.h"
+ #include "ui/base/ime/text_input_type.h"
+-- 
+2.32.0
+
