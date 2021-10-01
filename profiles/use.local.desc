@@ -2,7 +2,6 @@
 # Please add your descriptions to your package's metadata.xml ONLY.
 # * generated automatically using pmaint *
 
-net-im/teams-insiders:suid - Enable SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels.
 net-im/teams-insiders:swiftshader - Install SwiftShader OpenGL libaries.
 net-im/teams-insiders:system-ffmpeg - Use system ffmpeg instead of the bundled one.
 www-client/chromium:component-build - Split build into more shared libraries to speed up linking. Mostly intended for debugging and development, NOT RECOMMENDED for general use.
