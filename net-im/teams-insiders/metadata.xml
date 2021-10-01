@@ -2,7 +2,6 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<use>
-		<flag name="suid">Enable SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels.</flag>
 		<flag name="swiftshader">Install SwiftShader OpenGL libaries.</flag>
 		<flag name="system-ffmpeg">Use system ffmpeg instead of the bundled one.</flag>
 	</use>
