@@ -49,7 +49,7 @@ src_compile() {
 
 	tc-export AR CC LD NM
 
-	sh bin/package only make ast-ksh SHELL=/bin/sh || die
+	sh bin/package only make ast-ksh SHELL="${BROOT}"/bin/sh || die
 }
 
 src_install() {
