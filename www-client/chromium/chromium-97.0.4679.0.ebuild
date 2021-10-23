@@ -13,8 +13,8 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
-PATCHSET_NAME="chromium-96-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
@@ -231,9 +231,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-96-AXPlatformNodeAuraLinux-NoDestructor.patch"
-		"chromium-96-CouponDB-include.patch"
-		"chromium-96-WeakPtr-template.patch"
+		"chromium-97-Environment-namespace.patch"
+		"chromium-97-allocator-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -243,8 +242,7 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-96-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-97-allocator-include.patch"
-		"${FILESDIR}/chromium-97-Environment-namespace.patch"
+		"${FILESDIR}/chromium-97-SharedStorageWorkletHostManager-include.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)

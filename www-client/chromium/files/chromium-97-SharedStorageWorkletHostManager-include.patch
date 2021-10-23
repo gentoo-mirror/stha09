@@ -1,0 +1,25 @@
+From 4074c7f174132f4bbd08da4f590c79f7e391ef77 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 23 Oct 2021 11:25:18 +0000
+Subject: [PATCH] IWYU: add memory for std::unique_ptr in
+ SharedStorageWorkletHostManager
+
+---
+ .../browser/shared_storage/shared_storage_worklet_host_manager.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/content/browser/shared_storage/shared_storage_worklet_host_manager.h b/content/browser/shared_storage/shared_storage_worklet_host_manager.h
+index e35924c..72345b9 100644
+--- a/content/browser/shared_storage/shared_storage_worklet_host_manager.h
++++ b/content/browser/shared_storage/shared_storage_worklet_host_manager.h
+@@ -6,6 +6,7 @@
+ #define CONTENT_BROWSER_SHARED_STORAGE_SHARED_STORAGE_WORKLET_HOST_MANAGER_H_
+ 
+ #include <map>
++#include <memory>
+ 
+ #include "content/common/content_export.h"
+ 
+-- 
+2.32.0
+
