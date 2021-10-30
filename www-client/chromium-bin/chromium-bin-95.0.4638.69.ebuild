@@ -35,7 +35,6 @@ IUSE="cpu_flags_x86_sse2 selinux suid +swiftshader wayland widevine"
 RDEPEND="
 	app-accessibility/at-spi2-atk:2
 	app-accessibility/at-spi2-core:2
-	app-arch/snappy
 	dev-libs/atk
 	dev-libs/expat
 	dev-libs/glib:2
