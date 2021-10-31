@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="1"
+PATCHSET="2"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
@@ -230,8 +230,7 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-97-Environment-namespace.patch"
-		"chromium-97-allocator-include.patch"
+		"chromium-97-SharedElementResourceId-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -240,8 +239,8 @@ src_prepare() {
 	local PATCHES=(
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
+		"${FILESDIR}/chromium-95-xfce-maximize.patch"
 		"${FILESDIR}/chromium-96-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-97-SharedStorageWorkletHostManager-include.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
@@ -791,6 +790,8 @@ src_configure() {
 		myconf_gn+=" is_cfi=false"
 		# Disable PGO, because profile data is only compatible with >=clang-11
 		myconf_gn+=" chrome_pgo_phase=0"
+		# Don't add symbols to build
+		myconf_gn+=" symbol_level=0"
 	fi
 
 	einfo "Configuring Chromium..."
