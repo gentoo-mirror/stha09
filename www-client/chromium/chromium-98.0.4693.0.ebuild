@@ -243,6 +243,7 @@ src_prepare() {
 		"${FILESDIR}/chromium-97-Point-constexpr.patch"
 		"${FILESDIR}/chromium-97-ScrollView-reference.patch"
 		"${FILESDIR}/chromium-97-compiler.patch"
+		"${FILESDIR}/chromium-98-WaylandGLEGLUtility-include.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 	)
