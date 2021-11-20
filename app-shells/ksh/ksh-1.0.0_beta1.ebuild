@@ -52,6 +52,16 @@ src_compile() {
 	sh bin/package only make ast-ksh SHELL="${BROOT}"/bin/sh || die
 }
 
+src_test() {
+	# test tries to catch IO error
+	addwrite /proc/self/mem
+
+	# arith.sh uses A for tests
+	unset A
+
+	sh bin/shtests --compile || die
+}
+
 src_install() {
 	local myhost="$(sh bin/package host)"
 	cd "arch/${myhost}" || die
@@ -61,11 +71,4 @@ src_install() {
 	dosym ksh /bin/rksh
 
 	newman man/man1/sh.1 ksh.1
-}
-
-src_test() {
-	# test tries to catch IO error
-	addwrite /proc/self/mem
-
-	sh bin/shtests --compile || die
 }
