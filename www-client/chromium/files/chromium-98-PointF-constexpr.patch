@@ -1,0 +1,70 @@
+From 0fcf5beeb19179e9c29f4ae0711972a289391868 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 21 Nov 2021 09:58:46 +0000
+Subject: [PATCH] GCC: make some gfx::PointF operators constexpr
+
+Some operators in blink::FloatRect are constexpr and require that
+the operators in gfx::PointF are constexpr as well (operator== and
+operator+). To improve readability make operator!= and operator-
+constexpr too.
+---
+ ui/gfx/geometry/point_f.h | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/ui/gfx/geometry/point_f.h b/ui/gfx/geometry/point_f.h
+index 0a9ea3f..5b29bd5 100644
+--- a/ui/gfx/geometry/point_f.h
++++ b/ui/gfx/geometry/point_f.h
+@@ -39,12 +39,12 @@ class GEOMETRY_EXPORT PointF {
+     y_ += delta_y;
+   }
+ 
+-  void operator+=(const Vector2dF& vector) {
++  constexpr void operator+=(const Vector2dF& vector) {
+     x_ += vector.x();
+     y_ += vector.y();
+   }
+ 
+-  void operator-=(const Vector2dF& vector) {
++  constexpr void operator-=(const Vector2dF& vector) {
+     x_ -= vector.x();
+     y_ -= vector.y();
+   }
+@@ -54,7 +54,7 @@ class GEOMETRY_EXPORT PointF {
+ 
+   bool IsOrigin() const { return x_ == 0 && y_ == 0; }
+ 
+-  Vector2dF OffsetFromOrigin() const { return Vector2dF(x_, y_); }
++  constexpr Vector2dF OffsetFromOrigin() const { return Vector2dF(x_, y_); }
+ 
+   // A point is less than another point if its y-value is closer
+   // to the origin. If the y-values are the same, then point with
+@@ -89,21 +89,21 @@ class GEOMETRY_EXPORT PointF {
+   float y_;
+ };
+ 
+-inline bool operator==(const PointF& lhs, const PointF& rhs) {
++constexpr bool operator==(const PointF& lhs, const PointF& rhs) {
+   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
+ }
+ 
+-inline bool operator!=(const PointF& lhs, const PointF& rhs) {
++constexpr bool operator!=(const PointF& lhs, const PointF& rhs) {
+   return !(lhs == rhs);
+ }
+ 
+-inline PointF operator+(const PointF& lhs, const Vector2dF& rhs) {
++constexpr PointF operator+(const PointF& lhs, const Vector2dF& rhs) {
+   PointF result(lhs);
+   result += rhs;
+   return result;
+ }
+ 
+-inline PointF operator-(const PointF& lhs, const Vector2dF& rhs) {
++constexpr PointF operator-(const PointF& lhs, const Vector2dF& rhs) {
+   PointF result(lhs);
+   result -= rhs;
+   return result;
+-- 
+2.32.0
+
