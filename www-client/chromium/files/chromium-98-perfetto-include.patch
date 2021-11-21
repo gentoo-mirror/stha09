@@ -1,0 +1,24 @@
+From 3ae82507865903b65ac32b3988076f9caae8e358 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 21 Nov 2021 14:38:44 +0000
+Subject: [PATCH] IWYU: add limits for std::numeric_limits
+
+---
+ third_party/perfetto/include/perfetto/ext/base/flat_hash_map.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/perfetto/include/perfetto/ext/base/flat_hash_map.h b/third_party/perfetto/include/perfetto/ext/base/flat_hash_map.h
+index f8c640f..17fe1cd 100644
+--- a/third_party/perfetto/include/perfetto/ext/base/flat_hash_map.h
++++ b/third_party/perfetto/include/perfetto/ext/base/flat_hash_map.h
+@@ -23,6 +23,7 @@
+ 
+ #include <algorithm>
+ #include <functional>
++#include <limits>
+ 
+ namespace perfetto {
+ namespace base {
+-- 
+2.32.0
+
