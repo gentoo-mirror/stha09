@@ -13,15 +13,15 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="4"
-PATCHSET_NAME="chromium-97-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="component-build cups cpu_flags_arm_neon debug +hangouts headless +js-type-check kerberos +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu vaapi wayland widevine"
+IUSE="component-build cups cpu_flags_arm_neon debug +hangouts headless +js-type-check kerberos +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
 REQUIRED_USE="
 	component-build? ( !suid )
 	screencast? ( wayland )
@@ -57,7 +57,7 @@ COMMON_DEPEND="
 	>=media-libs/freetype-2.11.0-r1:=
 	system-harfbuzz? ( >=media-libs/harfbuzz-2.9.0:0=[icu(-)] )
 	media-libs/libjpeg-turbo:=
-	media-libs/libpng:=
+	system-png? ( media-libs/libpng:=[-apng] )
 	pulseaudio? ( media-sound/pulseaudio:= )
 	system-ffmpeg? (
 		>=media-video/ffmpeg-4.3:=
@@ -230,8 +230,6 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-97-Point-constexpr.patch"
-		"chromium-97-compiler.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -241,9 +239,11 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-98-compiler.patch"
-		"${FILESDIR}/chromium-98-ElementIdentifier-include.patch"
 		"${FILESDIR}/chromium-98-system-libdrm.patch"
+		"${FILESDIR}/chromium-98-PointF-constexpr.patch"
+		"${FILESDIR}/chromium-98-ContainerQuery-type.patch"
+		"${FILESDIR}/chromium-98-perfetto-include.patch"
+		"${FILESDIR}/chromium-98-image_bitmap-init.patch"
 		"${FILESDIR}/chromium-glibc-2.34.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
@@ -499,6 +499,9 @@ src_prepare() {
 	if ! use system-icu; then
 		keeplibs+=( third_party/icu )
 	fi
+	if ! use system-png; then
+		keeplibs+=( third_party/libpng )
+	fi
 	if use system-harfbuzz; then
 		keeplibs+=( third_party/harfbuzz-ng/utils )
 	else
@@ -606,7 +609,6 @@ src_configure() {
 		#harfbuzz-ng
 		libdrm
 		libjpeg
-		libpng
 		libwebp
 		zlib
 	)
@@ -615,6 +617,9 @@ src_configure() {
 	fi
 	if use system-icu; then
 		gn_system_libraries+=( icu )
+	fi
+	if use system-png; then
+		gn_system_libraries+=( libpng )
 	fi
 	if [[ ${CHROMIUM_FORCE_LIBCXX} != yes ]]; then
 		# unbundle only without libc++, because libc++ is not fully ABI compatible with libstdc++
