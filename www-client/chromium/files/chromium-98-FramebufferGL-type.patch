@@ -1,0 +1,42 @@
+From ccf22ee5272b0edf305bda8aacebde434bca774d Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 25 Nov 2021 12:29:44 +0000
+Subject: [PATCH] GCC: fix type conversion in FramebufferGL
+
+GCC has some problems deducing template argument. Help with assigning the value
+to a new const variable before using it.
+
+Error message:
+../../third_party/angle/src/libANGLE/renderer/gl/FramebufferGL.cpp:308:70:
+ error: default type conversion cannot deduce template argument for
+ 'template<class Dst, typename std::enable_if<angle::base::internal::IsNumericRangeContained<Dst,
+ unsigned int, void>::value, void>::type* <anonymous> >
+ constexpr angle::base::internal::StrictNumeric<T>::operator Dst() const
+ [with Dst = Dst;
+ typename std::enable_if<angle::base::internal::IsNumericRangeContained<Dst, T>::value>::type*
+ <anonymous> = <anonymous>; T = unsigned int]'
+  308 |             tmpPixels = new GLubyte[checkedAllocatedBytes.ValueOrDie()];
+      |
+---
+ third_party/angle/src/libANGLE/renderer/gl/FramebufferGL.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/angle/src/libANGLE/renderer/gl/FramebufferGL.cpp b/third_party/angle/src/libANGLE/renderer/gl/FramebufferGL.cpp
+index 6ceda45..764bcfa 100644
+--- a/third_party/angle/src/libANGLE/renderer/gl/FramebufferGL.cpp
++++ b/third_party/angle/src/libANGLE/renderer/gl/FramebufferGL.cpp
+@@ -305,8 +305,9 @@ class ScopedEXTTextureNorm16ReadbackWorkaround
+                 checkedAllocatedBytes += area.width * pixelBytes - rowBytes;
+             }
+             ANGLE_CHECK_GL_MATH(contextGL, checkedAllocatedBytes.IsValid());
+-            tmpPixels = new GLubyte[checkedAllocatedBytes.ValueOrDie()];
+-            memset(tmpPixels, 0, checkedAllocatedBytes.ValueOrDie());
++            const GLuint allocatedBytes = checkedAllocatedBytes.ValueOrDie();
++            tmpPixels = new GLubyte[allocatedBytes];
++            memset(tmpPixels, 0, allocatedBytes);
+         }
+ 
+         return angle::Result::Continue;
+-- 
+2.32.0
+
