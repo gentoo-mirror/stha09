@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="2"
+PATCHSET="3"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
@@ -229,10 +229,9 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-98-allocator-type.patch"
-		"chromium-98-c++17-constexpr-2.patch"
-		"chromium-98-perfetto-make_optional.patch"
-		"chromium-98-compiler.patch"
+		"chromium-98-CubicBezier-include.patch"
+		"chromium-98-PostedTask-noexcept.patch"
+		"chromium-98-c++17-constexpr-1.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -243,9 +242,8 @@ src_prepare() {
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-system-libdrm.patch"
-		"${FILESDIR}/chromium-98-compiler.patch"
-		"${FILESDIR}/chromium-98-gfx-constexpr.patch"
-		"${FILESDIR}/chromium-98-CubicBezier-include.patch"
+		"${FILESDIR}/chromium-98-AXPosition-NoDestructor.patch"
+		"${FILESDIR}/chromium-98-blink-include.patch"
 		"${FILESDIR}/chromium-glibc-2.34.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
