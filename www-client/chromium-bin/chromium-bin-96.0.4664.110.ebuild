@@ -49,7 +49,6 @@ RDEPEND="
 	media-libs/fontconfig
 	>=media-libs/freetype-2.11.0-r1
 	media-libs/libjpeg-turbo
-	media-libs/libpng
 	media-libs/libwebp
 	media-libs/mesa[gbm(+)]
 	media-libs/openh264
