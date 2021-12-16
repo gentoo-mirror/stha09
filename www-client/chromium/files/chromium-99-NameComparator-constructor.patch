@@ -1,0 +1,33 @@
+From ea3dfebffefb8fe307083627f295d65a93da68e4 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 15 Dec 2021 12:49:14 +0000
+Subject: [PATCH] libstdc++: avoid copy construction in
+ cablev2::Pairing::NameComparator
+
+libstdc++ requires copy construction of Compare class when used in
+std::stable_sort. This is not possible, because NameComparator has
+a std::unique_ptr member. Pass a reference instead.
+---
+ chrome/browser/webauthn/cablev2_devices.cc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/chrome/browser/webauthn/cablev2_devices.cc b/chrome/browser/webauthn/cablev2_devices.cc
+index 028d92d..a1b6549 100644
+--- a/chrome/browser/webauthn/cablev2_devices.cc
++++ b/chrome/browser/webauthn/cablev2_devices.cc
+@@ -293,8 +293,10 @@ std::vector<std::unique_ptr<Pairing>> MergeDevices(
+                    Pairing::CompareByLeastStableChannelFirst);
+ 
+   // Last, sort by name while preserving the order of entries with the same
+-  // name.
+-  std::stable_sort(ret.begin(), ret.end(), Pairing::CompareByName(locale));
++  // name. Need to make a reference for Compare, because libstdc++ would
++  // need copy constructor otherwise.
++  Pairing::NameComparator comparator = Pairing::CompareByName(locale);
++  std::stable_sort(ret.begin(), ret.end(), std::ref(comparator));
+ 
+   return ret;
+ }
+-- 
+2.32.0
+
