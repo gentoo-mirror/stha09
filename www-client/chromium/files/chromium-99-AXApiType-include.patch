@@ -1,0 +1,25 @@
+From 5d8840c640754d35e56604347472787947e2fbbc Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 15 Dec 2021 08:57:42 +0000
+Subject: [PATCH] IWYU: add cstring for strcmp in ui::AXApiType
+
+---
+ ui/accessibility/platform/inspect/ax_api_type.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ui/accessibility/platform/inspect/ax_api_type.cc b/ui/accessibility/platform/inspect/ax_api_type.cc
+index a2b511b..4d6ebf3 100644
+--- a/ui/accessibility/platform/inspect/ax_api_type.cc
++++ b/ui/accessibility/platform/inspect/ax_api_type.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "ui/accessibility/platform/inspect/ax_api_type.h"
+ 
++#include <cstring>
++
+ namespace ui {
+ 
+ namespace {
+-- 
+2.32.0
+
