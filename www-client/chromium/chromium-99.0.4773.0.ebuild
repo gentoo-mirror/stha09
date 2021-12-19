@@ -13,8 +13,8 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
-PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
+PATCHSET="4"
+PATCHSET_NAME="chromium-98-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
@@ -87,7 +87,7 @@ COMMON_DEPEND="
 		x11-libs/gtk+:3[X]
 		wayland? (
 			dev-libs/wayland:=
-			screencast? ( media-video/pipewire:0/0.3 )
+			screencast? ( media-video/pipewire:= )
 			x11-libs/gtk+:3[wayland,X]
 			x11-libs/libdrm:=
 		)
@@ -229,9 +229,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-98-CubicBezier-include.patch"
-		"chromium-98-PostedTask-noexcept.patch"
-		"chromium-98-c++17-constexpr-1.patch"
+		"chromium-95-libyuv-arm.patch"
+		"chromium-98-AXPosition-NoDestructor.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -242,8 +241,9 @@ src_prepare() {
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-system-libdrm.patch"
-		"${FILESDIR}/chromium-98-AXPosition-NoDestructor.patch"
-		"${FILESDIR}/chromium-98-blink-include.patch"
+		"${FILESDIR}/chromium-99-AXApiType-include.patch"
+		"${FILESDIR}/chromium-99-NameComparator-constructor.patch"
+		"${FILESDIR}/chromium-99-ScopedResState-include.patch"
 		"${FILESDIR}/chromium-glibc-2.34.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
@@ -915,7 +915,6 @@ src_install() {
 	fi
 
 	doins -r out/Release/locales
-	doins -r out/Release/resources
 	doins -r out/Release/MEIPreload
 
 	# Install vk_swiftshader_icd.json; bug #827861
