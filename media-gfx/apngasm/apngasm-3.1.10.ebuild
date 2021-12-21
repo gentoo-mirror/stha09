@@ -18,6 +18,7 @@ RDEPEND="
 	media-libs/libpng:0=
 	sys-libs/zlib:=
 "
+DEPEND="${RDEPEND}"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-3.1.10-static.patch"
