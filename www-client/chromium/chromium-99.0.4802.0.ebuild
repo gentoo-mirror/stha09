@@ -184,7 +184,7 @@ pre_build_checks() {
 			die "At least gcc 9.2 is required"
 		fi
 		if [[ ${CHROMIUM_FORCE_CLANG} == yes ]] || tc-is-clang || use libcxx; then
-			tc-is-cross-compiler &&	CPP=${CBUILD}-clang++ || CPP=${CHOST}-clang++
+			tc-is-cross-compiler && CPP=${CBUILD}-clang++ || CPP=${CHOST}-clang++
 			CPP+=" -E"
 			if ! ver_test "$(clang-major-version)" -ge 12; then
 				die "At least clang 12 is required"
