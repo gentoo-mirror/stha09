@@ -1,4 +1,4 @@
-# Copyright 2020-2021 Gentoo Authors
+# Copyright 2020-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -12,7 +12,7 @@ inherit chromium-2 desktop pax-utils readme.gentoo-r1 unpacker xdg-utils
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 
-MY_P=${P}-2
+MY_P=${P}-1
 
 SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common.tar.xz
 	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-l10n.tar.xz
@@ -34,7 +34,7 @@ SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="-* ~amd64 ~x86"
+KEYWORDS="-* ~amd64 ~arm64 ~x86"
 IUSE="cpu_flags_x86_sse2 selinux suid +swiftshader wayland widevine"
 
 RDEPEND="
@@ -43,7 +43,6 @@ RDEPEND="
 	dev-libs/atk
 	dev-libs/expat
 	dev-libs/glib:2
-	dev-libs/icu:0/69.1
 	dev-libs/libxml2[icu]
 	dev-libs/libxslt
 	dev-libs/nspr
