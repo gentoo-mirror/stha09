@@ -13,18 +13,17 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="4"
-PATCHSET_NAME="chromium-98-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="component-build cups cpu_flags_arm_neon debug +hangouts headless +js-type-check kerberos libcxx +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
+IUSE="component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
 REQUIRED_USE="
 	component-build? ( !suid !libcxx )
-	headless? ( !vaapi )
 	screencast? ( wayland )
 "
 
@@ -43,14 +42,12 @@ COMMON_X_DEPEND="
 "
 
 COMMON_SNAPSHOT_DEPEND="
-	dev-libs/glib:2
 	system-icu? ( >=dev-libs/icu-69.1:= )
 	>=dev-libs/libxml2-2.9.4-r3:=[icu]
 	dev-libs/nspr:=
 	>=dev-libs/nss-3.26:=
 	!libcxx? ( >=dev-libs/re2-0.2019.08.01:= )
 	dev-libs/libxslt:=
-	>=media-libs/alsa-lib-1.0.19:=
 	media-libs/fontconfig:=
 	>=media-libs/freetype-2.11.0-r1:=
 	system-harfbuzz? ( >=media-libs/harfbuzz-3:0=[icu(-)] )
@@ -59,12 +56,14 @@ COMMON_SNAPSHOT_DEPEND="
 	>=media-libs/libwebp-0.4.0:=
 	media-libs/mesa:=[gbm(+)]
 	>=media-libs/openh264-1.6.0:=
-	pulseaudio? ( media-sound/pulseaudio:= )
 	sys-libs/zlib:=
-	kerberos? ( virtual/krb5 )
 	x11-libs/libdrm:=
-	vaapi? ( >=x11-libs/libva-2.7:=[X,drm] )
 	!headless? (
+		dev-libs/glib:2
+		>=media-libs/alsa-lib-1.0.19:=
+		pulseaudio? ( media-sound/pulseaudio:= )
+		kerberos? ( virtual/krb5 )
+		vaapi? ( >=x11-libs/libva-2.7:=[X,drm] )
 		x11-libs/libX11:=
 		x11-libs/libXext:=
 		x11-libs/libxcb:=
@@ -78,11 +77,7 @@ COMMON_SNAPSHOT_DEPEND="
 
 COMMON_DEPEND="
 	${COMMON_SNAPSHOT_DEPEND}
-	>=app-accessibility/at-spi2-atk-2.26:2
-	>=app-accessibility/at-spi2-core-2.26:2
 	app-arch/bzip2:=
-	>=dev-libs/atk-2.26
-	cups? ( >=net-print/cups-1.3.11:= )
 	dev-libs/expat:=
 	system-ffmpeg? (
 		>=media-video/ffmpeg-4.3:=
@@ -94,23 +89,44 @@ COMMON_DEPEND="
 	)
 	net-misc/curl[ssl]
 	sys-apps/dbus:=
-	sys-apps/pciutils:=
-	virtual/udev
-	x11-libs/cairo:=
-	x11-libs/pango:=
 	media-libs/flac:=
 	sys-libs/zlib:=[minizip]
 	!headless? (
 		${COMMON_X_DEPEND}
-		x11-libs/gtk+:3[X,wayland?]
+		>=app-accessibility/at-spi2-atk-2.26:2
+		>=app-accessibility/at-spi2-core-2.26:2
+		>=dev-libs/atk-2.26
+		cups? ( >=net-print/cups-1.3.11:= )
+		sys-apps/pciutils:=
+		virtual/udev
+		x11-libs/cairo:=
+		x11-libs/pango:=
 	)
 "
 RDEPEND="${COMMON_DEPEND}
+	!headless? (
+		gtk4? (
+			|| (
+				gui-libs/gtk:4[X,wayland?]
+				x11-libs/gtk+:3[X,wayland?]
+			)
+		)
+		!gtk4? (
+			|| (
+				x11-libs/gtk+:3[X,wayland?]
+				gui-libs/gtk:4[X,wayland?]
+			)
+		)
+	)
 	x11-misc/xdg-utils
 	virtual/ttf-fonts
 	selinux? ( sec-policy/selinux-chromium )
 "
 DEPEND="${COMMON_DEPEND}
+	!headless? (
+		gtk4? ( gui-libs/gtk:4[X,wayland?] )
+		!gtk4? ( x11-libs/gtk+:3[X,wayland?] )
+	)
 "
 # dev-vcs/git - https://bugs.gentoo.org/593476
 BDEPEND="
@@ -209,6 +225,13 @@ pre_build_checks() {
 
 pkg_pretend() {
 	pre_build_checks
+
+	if use headless; then
+		local headless_unused_flags=("cups" "kerberos" "pulseaudio" "vaapi" "wayland")
+		for myiuse in ${headless_unused_flags[@]}; do
+			use ${myiuse} && ewarn "Ignoring USE=${myiuse} since USE=headless is set."
+		done
+	fi
 }
 
 pkg_setup() {
@@ -229,9 +252,9 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-95-libyuv-arm.patch"
-		"chromium-98-AXPosition-NoDestructor.patch"
-		"chromium-98-WaylandFrameManager-check.patch"
+		"chromium-98-MiraclePtr-gcc-ice.patch"
+		"chromium-99-ScopedResState-include.patch"
+		"chromium-99-prediction_common-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -240,10 +263,9 @@ src_prepare() {
 	local PATCHES=(
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
+		"${FILESDIR}/chromium-97-arm-tflite-cast.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-system-libdrm.patch"
-		"${FILESDIR}/chromium-99-ScopedResState-include.patch"
-		"${FILESDIR}/chromium-99-prediction_common-include.patch"
 		"${FILESDIR}/chromium-glibc-2.34-r1.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
@@ -650,11 +672,21 @@ src_configure() {
 	myconf_gn+=" enable_js_type_check=$(usex js-type-check true false)"
 	myconf_gn+=" enable_hangout_services_extension=$(usex hangouts true false)"
 	myconf_gn+=" enable_widevine=$(usex widevine true false)"
-	myconf_gn+=" use_cups=$(usex cups true false)"
-	myconf_gn+=" use_kerberos=$(usex kerberos true false)"
-	myconf_gn+=" use_pulseaudio=$(usex pulseaudio true false)"
-	myconf_gn+=" use_vaapi=$(usex vaapi true false)"
-	myconf_gn+=" rtc_use_pipewire=$(usex screencast true false)"
+
+	if use headless; then
+		myconf_gn+=" use_cups=false"
+		myconf_gn+=" use_kerberos=false"
+		myconf_gn+=" use_pulseaudio=false"
+		myconf_gn+=" use_vaapi=false"
+		myconf_gn+=" rtc_use_pipewire=false"
+	else
+		myconf_gn+=" use_cups=$(usex cups true false)"
+		myconf_gn+=" use_kerberos=$(usex kerberos true false)"
+		myconf_gn+=" use_pulseaudio=$(usex pulseaudio true false)"
+		myconf_gn+=" use_vaapi=$(usex vaapi true false)"
+		myconf_gn+=" rtc_use_pipewire=$(usex screencast true false)"
+		myconf_gn+=" gtk_version=$(usex gtk4 4 3)"
+	fi
 
 	# TODO: link_pulseaudio=true for GN.
 
@@ -773,8 +805,8 @@ src_configure() {
 		fi
 	fi
 
-	# Explicitly disable ICU data file support for system-icu builds.
-	if use system-icu; then
+	# Explicitly disable ICU data file support for system-icu/headless builds.
+	if use system-icu || use headless; then
 		myconf_gn+=" icu_use_data_file=false"
 	fi
 
@@ -786,6 +818,11 @@ src_configure() {
 		if use headless; then
 			myconf_gn+=" ozone_platform=\"headless\""
 			myconf_gn+=" use_xkbcommon=false use_gtk=false"
+			myconf_gn+=" use_glib=false use_gio=false"
+			myconf_gn+=" use_pangocairo=false use_alsa=false"
+			myconf_gn+=" use_libpci=false use_udev=false"
+			myconf_gn+=" enable_print_preview=false"
+			myconf_gn+=" enable_remoting=false"
 		else
 			myconf_gn+=" ozone_platform_wayland=true"
 			myconf_gn+=" use_system_libdrm=true"
@@ -919,7 +956,7 @@ src_install() {
 		[[ ${#files[@]} -gt 0 ]] && doins "${files[@]}"
 	)
 
-	if ! use system-icu; then
+	if ! use system-icu && ! use headless; then
 		doins out/Release/icudtl.dat
 	fi
 
@@ -969,15 +1006,22 @@ pkg_postinst() {
 	xdg_desktop_database_update
 	readme.gentoo_print_elog
 
-	if use vaapi; then
-		elog "VA-API is disabled by default at runtime. You have to enable it"
-		elog "by adding --enable-features=VaapiVideoDecoder to CHROMIUM_FLAGS"
-		elog "in /etc/chromium/default."
-	fi
-	if use screencast; then
-		elog "Screencast is disabled by default at runtime. Either enable it"
-		elog "by navigating to chrome://flags/#enable-webrtc-pipewire-capturer"
-		elog "inside Chromium or add --enable-webrtc-pipewire-capturer"
-		elog "to CHROMIUM_FLAGS in /etc/chromium/default."
+	if ! use headless; then
+		if use vaapi; then
+			elog "VA-API is disabled by default at runtime. You have to enable it"
+			elog "by adding --enable-features=VaapiVideoDecoder to CHROMIUM_FLAGS"
+			elog "in /etc/chromium/default."
+		fi
+		if use screencast; then
+			elog "Screencast is disabled by default at runtime. Either enable it"
+			elog "by navigating to chrome://flags/#enable-webrtc-pipewire-capturer"
+			elog "inside Chromium or add --enable-webrtc-pipewire-capturer"
+			elog "to CHROMIUM_FLAGS in /etc/chromium/default."
+		fi
+		if use gtk4; then
+			elog "Chromium prefers GTK3 over GTK4 at runtime. To override this"
+			elog "behavior you need to pass --gtk-version=4, e.g. by adding it"
+			elog "to CHROMIUM_FLAGS in /etc/chromium/default."
+		fi
 	fi
 }
