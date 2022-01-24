@@ -1,0 +1,25 @@
+From 16aa09f8f381e7b7d216f4200c4cfd4dc40ef2ed Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 24 Jan 2022 16:36:33 +0000
+Subject: [PATCH] IWYU: add cstring for std::strerror in
+ ui::WaylandEventWatcher
+
+---
+ ui/ozone/platform/wayland/host/wayland_event_watcher.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_watcher.cc b/ui/ozone/platform/wayland/host/wayland_event_watcher.cc
+index e8807c4..83d2a35 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_watcher.cc
++++ b/ui/ozone/platform/wayland/host/wayland_event_watcher.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "ui/ozone/platform/wayland/host/wayland_event_watcher.h"
+ 
++#include <cstring>
+ #include <wayland-client-core.h>
+ 
+ #include "base/logging.h"
+-- 
+2.34.1
+
