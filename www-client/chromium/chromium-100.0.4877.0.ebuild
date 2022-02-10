@@ -105,17 +105,9 @@ COMMON_DEPEND="
 "
 RDEPEND="${COMMON_DEPEND}
 	!headless? (
-		gtk4? (
-			|| (
-				gui-libs/gtk:4[X,wayland?]
-				x11-libs/gtk+:3[X,wayland?]
-			)
-		)
-		!gtk4? (
-			|| (
-				x11-libs/gtk+:3[X,wayland?]
-				gui-libs/gtk:4[X,wayland?]
-			)
+		|| (
+			x11-libs/gtk+:3[X,wayland?]
+			gui-libs/gtk:4[X,wayland?]
 		)
 	)
 	x11-misc/xdg-utils
@@ -252,9 +244,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-98-MiraclePtr-gcc-ice.patch"
-		"chromium-99-ScopedResState-include.patch"
-		"chromium-99-prediction_common-include.patch"
+		"chromium-100-ByteSwapUintPtrT-constexpr.patch"
+		"chromium-100-LayoutUnit-constexpr.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -265,9 +256,8 @@ src_prepare() {
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-97-arm-tflite-cast.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-98-system-libdrm.patch"
-		"${FILESDIR}/chromium-99-AutofillAssistantModelExecutor-NoDestructor.patch"
-		"${FILESDIR}/chromium-glibc-2.34-r1.patch"
+		"${FILESDIR}/chromium-100-SimplePartitionStatsDumper-include.patch"
+		"${FILESDIR}/chromium-100-InMilliseconds-constexpr.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
@@ -475,7 +465,6 @@ src_prepare() {
 		third_party/swiftshader/third_party/marl
 		third_party/swiftshader/third_party/subzero
 		third_party/swiftshader/third_party/SPIRV-Headers/include/spirv/unified1
-		third_party/tcmalloc
 		third_party/tensorflow-text
 		third_party/tflite
 		third_party/tflite/src/third_party/eigen3
@@ -598,8 +587,8 @@ src_configure() {
 		tc-export BUILD_{AR,CC,CXX,NM}
 		myconf_gn+=" host_toolchain=\"//build/toolchain/linux/unbundle:host\""
 		myconf_gn+=" v8_snapshot_toolchain=\"//build/toolchain/linux/unbundle:host\""
-		myconf_gn+=" pkg_config=\"${CHOST}-pkg-config\""
-		myconf_gn+=" host_pkg_config=\"pkg-config\""
+		myconf_gn+=" pkg_config=\"$(tc-get_PKG_CONFIG)\""
+		myconf_gn+=" host_pkg_config=\"$(tc-getBUILD_PKG_CONFIG)\""
 
 		# setup cups-config, build system only uses --libs option
 		if use cups; then
@@ -659,6 +648,7 @@ src_configure() {
 	if use system-png; then
 		gn_system_libraries+=( libpng )
 	fi
+	# re2 library interface relies on std::string and std::vector
 	if ! use libcxx; then
 		gn_system_libraries+=( re2 )
 	fi
