@@ -224,4 +224,10 @@ pkg_postinst() {
 	elog "VA-API is disabled by default at runtime. You have to enable it"
 	elog "by adding --enable-features=VaapiVideoDecoder to CHROMIUM_FLAGS"
 	elog "in /etc/chromium/default."
+	elog
+	elog "chromium-bin profile defaults to \${HOME}/.config/chromium-bin."
+	elog "Some extensions (e.g. KeepassXC) expect default chromium profile"
+	elog "at \${HOME}/.config/chromium. You can overwrite this by adding"
+	elog "--user-data-dir=\${HOME}/.config/chromium to CHROMIUM_FLAGS in"
+	elog "/etc/chromium/default."
 }
