@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="2"
+PATCHSET="3"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
@@ -120,7 +120,6 @@ DEPEND="${COMMON_DEPEND}
 		!gtk4? ( x11-libs/gtk+:3[X,wayland?] )
 	)
 "
-# dev-vcs/git - https://bugs.gentoo.org/593476
 BDEPEND="
 	${COMMON_SNAPSHOT_DEPEND}
 	${PYTHON_DEPS}
@@ -131,7 +130,6 @@ BDEPEND="
 	libcxx? ( >=sys-devel/clang-12 )
 	dev-lang/perl
 	>=dev-util/gn-0.1807
-	dev-vcs/git
 	>=dev-util/gperf-3.0.3
 	>=dev-util/ninja-1.7.2
 	>=net-libs/nodejs-7.6.0[inspector]
@@ -244,7 +242,7 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-100-PartitionFreelistEntry-namespace.patch"
+		"chromium-100-InMilliseconds-constexpr.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -255,6 +253,9 @@ src_prepare() {
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-97-arm-tflite-cast.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
+		"${FILESDIR}/chromium-98-gtk4-build.patch"
+		"${FILESDIR}/chromium-100-FindByDottedPath-nullptr.patch"
+		"${FILESDIR}/chromium-100-macro-typo.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
@@ -532,6 +533,9 @@ src_prepare() {
 	if use ppc64; then
 		pushd third_party/libvpx >/dev/null || die
 		mkdir -p source/config/linux/ppc64 || die
+		# requires git and clang, bug #832803
+		sed -i -e "s|^update_readme||g; s|clang-format|${EPREFIX}/bin/true|g" \
+			generate_gni.sh || die
 		./generate_gni.sh || die
 		popd >/dev/null || die
 	fi
@@ -1004,7 +1008,7 @@ pkg_postinst() {
 		if use screencast; then
 			elog "Screencast is disabled by default at runtime. Either enable it"
 			elog "by navigating to chrome://flags/#enable-webrtc-pipewire-capturer"
-			elog "inside Chromium or add --enable-webrtc-pipewire-capturer"
+			elog "inside Chromium or add --enable-features=WebRTCPipeWireCapturer"
 			elog "to CHROMIUM_FLAGS in /etc/chromium/default."
 		fi
 		if use gtk4; then
