@@ -1,0 +1,26 @@
+From 04713f480642ebd6d31bad544b082dce128b475f Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 21 Feb 2022 19:00:34 +0000
+Subject: [PATCH] GCC: add explicit move in SCTHashdanceMetadata::ToValue()
+
+Otherwise GCC tries to use deleted copy constructor of base::Value.
+---
+ services/network/sct_auditing/sct_auditing_reporter.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/network/sct_auditing/sct_auditing_reporter.cc b/services/network/sct_auditing/sct_auditing_reporter.cc
+index a057e8e..365527b 100644
+--- a/services/network/sct_auditing/sct_auditing_reporter.cc
++++ b/services/network/sct_auditing/sct_auditing_reporter.cc
+@@ -188,7 +188,7 @@ base::Value SCTAuditingReporter::SCTHashdanceMetadata::ToValue() const {
+       kLogIdKey, base::Base64Encode(base::as_bytes(base::make_span(log_id))));
+   value.SetKey(kLogMMDKey, base::TimeDeltaToValue(log_mmd));
+   value.SetKey(kCertificateExpiry, base::TimeToValue(certificate_expiry));
+-  return value;
++  return std::move(value);
+ }
+ 
+ // static
+-- 
+2.34.1
+
