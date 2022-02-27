@@ -1,0 +1,24 @@
+From 1d35e55f32c12b73a42037e5ed0fe591a3579c27 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 26 Feb 2022 18:28:38 +0000
+Subject: [PATCH] IWYU: add memory for std::unique_ptr in MaglevPrintingVisitor
+
+---
+ v8/src/maglev/maglev-graph-printer.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/v8/src/maglev/maglev-graph-printer.h b/v8/src/maglev/maglev-graph-printer.h
+index 7c558ed..2ff7ef2 100644
+--- a/v8/src/maglev/maglev-graph-printer.h
++++ b/v8/src/maglev/maglev-graph-printer.h
+@@ -8,6 +8,7 @@
+ #include <ostream>
+ #include <set>
+ #include <vector>
++#include <memory>
+ 
+ namespace v8 {
+ namespace internal {
+-- 
+2.34.1
+
