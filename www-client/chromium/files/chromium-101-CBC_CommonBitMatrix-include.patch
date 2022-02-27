@@ -1,0 +1,24 @@
+From fa2bed46ac332db749cd413f9e836fad71bcb1fd Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 27 Feb 2022 16:52:02 +0000
+Subject: [PATCH] IWYU: add stddef.h for size_t in CBC_CommonBitMatrix
+
+---
+ third_party/pdfium/fxbarcode/common/BC_CommonBitMatrix.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/pdfium/fxbarcode/common/BC_CommonBitMatrix.h b/third_party/pdfium/fxbarcode/common/BC_CommonBitMatrix.h
+index 51022b8..4e9bf1e 100644
+--- a/third_party/pdfium/fxbarcode/common/BC_CommonBitMatrix.h
++++ b/third_party/pdfium/fxbarcode/common/BC_CommonBitMatrix.h
+@@ -7,6 +7,7 @@
+ #ifndef FXBARCODE_COMMON_BC_COMMONBITMATRIX_H_
+ #define FXBARCODE_COMMON_BC_COMMONBITMATRIX_H_
+ 
++#include <stddef.h>
+ #include <stdint.h>
+ 
+ #include <vector>
+-- 
+2.34.1
+
