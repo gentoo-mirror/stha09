@@ -12,7 +12,7 @@ inherit chromium-2 desktop pax-utils readme.gentoo-r1 unpacker xdg-utils
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 
-MY_P=${P}-1
+MY_P=${P}-2
 
 SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common.tar.xz
 	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-l10n.tar.xz
@@ -55,7 +55,7 @@ RDEPEND="
 	media-libs/libjpeg-turbo
 	media-libs/libwebp
 	media-libs/mesa[gbm(+)]
-	media-libs/openh264
+	media-libs/openh264:0/6.1
 	media-libs/opus
 	net-print/cups
 	sys-apps/dbus
