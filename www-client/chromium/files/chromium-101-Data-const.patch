@@ -1,0 +1,92 @@
+From 47a349fb5260345a8d4be0e5281646d05611d278 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Thu, 10 Mar 2022 20:43:18 +0000
+Subject: [PATCH] libstdc++: fix copy constructors declaration in update_client
+
+The copy constructors declaration for protocol_request::Data and
+ProtocolParser::Result::Data are missing const, so they are not the
+regular copy constructor.
+
+This does not play well with libstdc++ implementation of std::vector.
+
+Fixes these compilation errors:
+    /usr/include/c++/11/bits/stl_algobase.h:385:25: error: binding reference of type ‘update_client::protocol_request::Data&’ to ‘const update_client::protocol_request::Data’ discards qualifiers
+      385 |               *__result = *__first;
+          |               ~~~~~~~~~~^~~~~~~~~~
+    In file included from ../../components/update_client/protocol_serializer.h:15,
+                     from ../../components/update_client/protocol_serializer.cc:5:
+    ../../components/update_client/protocol_definition.h:84:19: note:   initializing argument 1 of ‘update_client::protocol_request::Data& update_client::protocol_request::Data::operator=(update_client::protocol_request::Data&)’
+       84 |   Data& operator=(Data&);
+          |                   ^~~~~
+    /usr/include/c++/11/bits/stl_algobase.h:385:25: error: binding reference of type ‘update_client::ProtocolParser::Result::Data&’ to ‘const update_client::ProtocolParser::Result::Data’ discards qualifiers
+      385 |               *__result = *__first;
+          |               ~~~~~~~~~~^~~~~~~~~~
+    In file included from ../../components/update_client/component.h:22,
+                     from ../../components/update_client/update_engine.h:19,
+                     from ../../components/update_client/update_engine.cc:5:
+    ../../components/update_client/protocol_parser.h:63:23: note:   initializing argument 1 of ‘update_client::ProtocolParser::Result::Data& update_client::ProtocolParser::Result::Data::operator=(update_client::ProtocolParser::Result::Data&)’
+       63 |       Data& operator=(Data&);
+          |                       ^~~~~
+
+Bug: 957519
+Change-Id: I19ae96f9a9355a964952c4919947c3adc90e1fbd
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/3515642
+Reviewed-by: Joshua Pawlicki <waffles@chromium.org>
+Commit-Queue: José Dapena Paz <jdapena@igalia.com>
+Cr-Commit-Position: refs/heads/main@{#979925}
+---
+
+diff --git a/components/update_client/protocol_definition.cc b/components/update_client/protocol_definition.cc
+index 53eedbb..86bb690 100644
+--- a/components/update_client/protocol_definition.cc
++++ b/components/update_client/protocol_definition.cc
+@@ -26,7 +26,7 @@
+ 
+ Data::Data() = default;
+ Data::Data(const Data& other) = default;
+-Data& Data::operator=(Data&) = default;
++Data& Data::operator=(const Data&) = default;
+ Data::Data(const std::string& name,
+            const std::string& install_data_index,
+            const std::string& untrusted_data)
+diff --git a/components/update_client/protocol_definition.h b/components/update_client/protocol_definition.h
+index 577e6dda..f947b27 100644
+--- a/components/update_client/protocol_definition.h
++++ b/components/update_client/protocol_definition.h
+@@ -81,7 +81,7 @@
+ struct Data {
+   Data();
+   Data(const Data& other);
+-  Data& operator=(Data&);
++  Data& operator=(const Data& other);
+   Data(const std::string& name,
+        const std::string& install_data_index,
+        const std::string& untrusted_data);
+diff --git a/components/update_client/protocol_parser.cc b/components/update_client/protocol_parser.cc
+index 2db22e7..fe576110 100644
+--- a/components/update_client/protocol_parser.cc
++++ b/components/update_client/protocol_parser.cc
+@@ -36,8 +36,8 @@
+ 
+ ProtocolParser::Result::Data::Data() = default;
+ ProtocolParser::Result::Data::Data(const Data& other) = default;
+-ProtocolParser::Result::Data& ProtocolParser::Result::Data::operator=(Data&) =
+-    default;
++ProtocolParser::Result::Data& ProtocolParser::Result::Data::operator=(
++    const Data&) = default;
+ ProtocolParser::Result::Data::Data(const std::string& status,
+                                    const std::string& name,
+                                    const std::string& install_data_index,
+diff --git a/components/update_client/protocol_parser.h b/components/update_client/protocol_parser.h
+index 2aa66ed..5010940 100644
+--- a/components/update_client/protocol_parser.h
++++ b/components/update_client/protocol_parser.h
+@@ -60,7 +60,7 @@
+     struct Data {
+       Data();
+       Data(const Data& other);
+-      Data& operator=(Data&);
++      Data& operator=(const Data&);
+       Data(const std::string& status,
+            const std::string& name,
+            const std::string& install_data_index,
