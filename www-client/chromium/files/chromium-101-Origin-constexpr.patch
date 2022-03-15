@@ -1,77 +1,31 @@
-From 86f5198192c7159f27ae1fb5538e7a30c1305ebc Mon Sep 17 00:00:00 2001
+From ffbce04c95525350a20c85fb80dcb0bc15f04de5 Mon Sep 17 00:00:00 2001
 From: Stephan Hartmann <stha09@googlemail.com>
-Date: Fri, 11 Mar 2022 18:38:56 +0000
-Subject: [PATCH] GCC: make some url::Origin operators constexpr
+Date: Tue, 15 Mar 2022 12:03:17 +0000
+Subject: [PATCH] GCC: make operators inline in AuctionRunner::InterestGroupKey
 
-content::AuctionRunner operator < and == are constexpr. This
-requires that url::Origin operators are constexpr too.
+operators cannot be constexpr, because operators url::Origin are
+not constexpr.
 ---
- url/origin.cc | 10 ----------
- url/origin.h  | 16 ++++++++++++----
- 2 files changed, 12 insertions(+), 14 deletions(-)
+ content/browser/interest_group/auction_runner.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/url/origin.cc b/url/origin.cc
-index 0600b69..e80a98d 100644
---- a/url/origin.cc
-+++ b/url/origin.cc
-@@ -154,12 +154,6 @@ const base::UnguessableToken* Origin::GetNonceForSerialization() const {
-   return nonce_ ? &nonce_->token() : nullptr;
- }
- 
--bool Origin::IsSameOriginWith(const Origin& other) const {
--  // scheme/host/port must match, even for opaque origins where |tuple_| holds
--  // the precursor origin.
--  return std::tie(tuple_, nonce_) == std::tie(other.tuple_, other.nonce_);
--}
--
- bool Origin::IsSameOriginWith(const GURL& url) const {
-   if (opaque())
-     return false;
-@@ -250,10 +244,6 @@ bool Origin::DomainIs(base::StringPiece canonical_domain) const {
-   return !opaque() && url::DomainIs(tuple_.host(), canonical_domain);
- }
- 
--bool Origin::operator<(const Origin& other) const {
--  return std::tie(tuple_, nonce_) < std::tie(other.tuple_, other.nonce_);
--}
--
- Origin Origin::DeriveNewOpaqueOrigin() const {
-   return Origin(Nonce(), tuple_);
- }
-diff --git a/url/origin.h b/url/origin.h
-index 1ad8f28..77ad9bc 100644
---- a/url/origin.h
-+++ b/url/origin.h
-@@ -217,9 +217,15 @@ class COMPONENT_EXPORT(URL) Origin {
-   // are exact matches. Two opaque origins are same-origin only if their
-   // internal nonce values match. A non-opaque origin is never same-origin with
-   // an opaque origin.
--  bool IsSameOriginWith(const Origin& other) const;
--  bool operator==(const Origin& other) const { return IsSameOriginWith(other); }
--  bool operator!=(const Origin& other) const {
-+  constexpr bool IsSameOriginWith(const Origin& other) const {
-+    // scheme/host/port must match, even for opaque origins where |tuple_| holds
-+    // the precursor origin.
-+    return std::tie(tuple_, nonce_) == std::tie(other.tuple_, other.nonce_);
-+  }
-+  constexpr bool operator==(const Origin& other) const {
-+    return IsSameOriginWith(other);
-+  }
-+  constexpr bool operator!=(const Origin& other) const {
-     return !IsSameOriginWith(other);
-   }
- 
-@@ -274,7 +280,9 @@ class COMPONENT_EXPORT(URL) Origin {
- 
-   // Allows Origin to be used as a key in STL (for example, a std::set or
-   // std::map).
--  bool operator<(const Origin& other) const;
-+  constexpr bool operator<(const Origin& other) const {
-+    return std::tie(tuple_, nonce_) < std::tie(other.tuple_, other.nonce_);
-+  }
- 
-   // Creates a new opaque origin that is guaranteed to be cross-origin to all
-   // currently existing origins. An origin created by this method retains its
+diff --git a/content/browser/interest_group/auction_runner.h b/content/browser/interest_group/auction_runner.h
+index 564a10c..5c52841 100644
+--- a/content/browser/interest_group/auction_runner.h
++++ b/content/browser/interest_group/auction_runner.h
+@@ -40,10 +40,10 @@ class CONTENT_EXPORT AuctionRunner {
+   // appropriate.
+   struct InterestGroupKey {
+     InterestGroupKey(url::Origin o, std::string n) : owner(o), name(n) {}
+-    constexpr bool operator<(const InterestGroupKey& other) const {
++    inline bool operator<(const InterestGroupKey& other) const {
+       return owner != other.owner ? owner < other.owner : name < other.name;
+     }
+-    constexpr bool operator==(const InterestGroupKey& other) const {
++    inline bool operator==(const InterestGroupKey& other) const {
+       return owner == other.owner && name == other.name;
+     }
+     url::Origin owner;
 -- 
 2.34.1
 
