@@ -1,7 +1,7 @@
 # Copyright 2020-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 CHROMIUM_LANGS="am ar bg bn ca cs da de el en-GB es es-419 et fa fi fil fr gu he
 	hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr
@@ -12,7 +12,7 @@ inherit chromium-2 desktop pax-utils readme.gentoo-r1 unpacker xdg-utils
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 
-MY_P=${P}-2
+MY_P=${P}-1
 
 SRC_URI="https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-common.tar.xz
 	https://dev.gentoo.org/~sultan/distfiles/www-client/chromium-bin/${MY_P}-l10n.tar.xz
@@ -219,7 +219,7 @@ pkg_postinst() {
 	readme.gentoo_print_elog
 
 	elog "For VA-API support you need to install x11-libs/libva with"
-	elog "USE=X and USE=drm enabled."
+	elog "USE=X enabled."
 	elog
 	elog "VA-API is disabled by default at runtime. You have to enable it"
 	elog "by adding --enable-features=VaapiVideoDecoder to CHROMIUM_FLAGS"
