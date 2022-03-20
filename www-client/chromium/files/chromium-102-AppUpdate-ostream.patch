@@ -1,0 +1,152 @@
+From abab9c68b1336e69eab51e0fee13c15210dc5aca Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 20 Mar 2022 18:11:59 +0000
+Subject: [PATCH] libstdc++: fix ostream operator<< for apps::AppUpdate
+
+std::unique_ptr has no operator<< in libstdc++. Even it would
+exist, it would just return the pointer value and not the content.
+Implement the necessary ToString() methods.
+---
+ .../app_service/public/cpp/app_update.cc      |  2 +-
+ .../app_service/public/cpp/intent_filter.cc   | 55 +++++++++++++++++++
+ .../app_service/public/cpp/intent_filter.h    |  6 ++
+ 3 files changed, 62 insertions(+), 1 deletion(-)
+
+diff --git a/components/services/app_service/public/cpp/app_update.cc b/components/services/app_service/public/cpp/app_update.cc
+index 723d349..57d17eb 100644
+--- a/components/services/app_service/public/cpp/app_update.cc
++++ b/components/services/app_service/public/cpp/app_update.cc
+@@ -1028,7 +1028,7 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
+   out << "Paused: " << PRINT_OPTIONAL_VALUE(Paused) << std::endl;
+   out << "IntentFilters: " << std::endl;
+   for (const auto& filter : app.IntentFilters()) {
+-    out << filter << std::endl;
++    out << filter->ToString();
+   }
+ 
+   out << "ResizeLocked: " << PRINT_OPTIONAL_VALUE(ResizeLocked) << std::endl;
+diff --git a/components/services/app_service/public/cpp/intent_filter.cc b/components/services/app_service/public/cpp/intent_filter.cc
+index 7cc8315..442cc29 100644
+--- a/components/services/app_service/public/cpp/intent_filter.cc
++++ b/components/services/app_service/public/cpp/intent_filter.cc
+@@ -2,10 +2,29 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#include "components/services/app_service/public/cpp/macros.h"
++
+ #include "components/services/app_service/public/cpp/intent_filter.h"
+ 
+ namespace apps {
+ 
++APP_ENUM_TO_STRING(PatternMatchType,
++                   kNone,
++                   kLiteral,
++                   kPrefix,
++                   kGlob,
++                   kMimeType,
++                   kFileExtension,
++                   kIsDirectory,
++                   kSuffix)
++APP_ENUM_TO_STRING(ConditionType,
++                   kScheme,
++                   kHost,
++                   kPattern,
++                   kAction,
++                   kMimeType,
++                   kFile)
++
+ ConditionValue::ConditionValue(const std::string& value,
+                                PatternMatchType match_type)
+     : value(value), match_type(match_type) {}
+@@ -20,6 +39,13 @@ bool ConditionValue::operator!=(const ConditionValue& other) const {
+   return !(*this == other);
+ }
+ 
++std::string ConditionValue::ToString() const {
++  std::stringstream out;
++  out << "  value: " << value << std::endl;
++  out << "  match_type: " << EnumToString(match_type);
++  return out.str();
++}
++
+ Condition::Condition(ConditionType condition_type,
+                      ConditionValues condition_values)
+     : condition_type(condition_type),
+@@ -55,6 +81,18 @@ ConditionPtr Condition::Clone() const {
+   return std::make_unique<Condition>(condition_type, std::move(values));
+ }
+ 
++std::string Condition::ToString() const {
++  std::stringstream out;
++  out << "  condition_type: " << EnumToString(condition_type);
++  if (!condition_values.empty()) {
++    out << "  condition_values: " << std::endl;
++    for (const auto& condition_value : condition_values) {
++      out << condition_value->ToString();
++    }
++  }
++  return out.str();
++}
++
+ IntentFilter::IntentFilter() = default;
+ IntentFilter::~IntentFilter() = default;
+ 
+@@ -186,6 +224,23 @@ bool IntentFilter::IsFileExtensionsFilter() {
+   return true;
+ }
+ 
++std::string IntentFilter::ToString() const {
++  std::stringstream out;
++  if (activity_name.has_value()) {
++    out << " activity_name: " << activity_name.value() << std::endl;
++  }
++  if (activity_label.has_value()) {
++    out << " activity_label: " << activity_label.value() << std::endl;
++  }
++  if (!conditions.empty()) {
++    out << " conditions:" << std::endl;
++    for (const auto& condition : conditions) {
++      out << condition->ToString();
++    }
++  }
++  return out.str();
++}
++
+ IntentFilters CloneIntentFilters(const IntentFilters& intent_filters) {
+   IntentFilters ret;
+   for (const auto& intent_filter : intent_filters) {
+diff --git a/components/services/app_service/public/cpp/intent_filter.h b/components/services/app_service/public/cpp/intent_filter.h
+index 042f43b..dbfb366 100644
+--- a/components/services/app_service/public/cpp/intent_filter.h
++++ b/components/services/app_service/public/cpp/intent_filter.h
+@@ -64,6 +64,8 @@ struct COMPONENT_EXPORT(APP_TYPES) ConditionValue {
+   bool operator==(const ConditionValue& other) const;
+   bool operator!=(const ConditionValue& other) const;
+ 
++  std::string ToString() const;
++
+   std::string value;
+   PatternMatchType match_type;  // This will be None for non pattern conditions.
+ };
+@@ -85,6 +87,8 @@ struct COMPONENT_EXPORT(APP_TYPES) Condition {
+ 
+   std::unique_ptr<Condition> Clone() const;
+ 
++  std::string ToString() const;
++
+   ConditionType condition_type;
+   ConditionValues condition_values;
+ };
+@@ -129,6 +133,8 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
+   // Returns true if the filter only contains file extension pattern matches.
+   bool IsFileExtensionsFilter();
+ 
++  std::string ToString() const;
++
+   Conditions conditions;
+ 
+   // Activity which registered this filter. We only fill this field for ARC
+-- 
+2.34.1
+
