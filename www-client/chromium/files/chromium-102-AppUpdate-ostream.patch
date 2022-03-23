@@ -9,16 +9,16 @@ Implement the necessary ToString() methods.
 
 ---
  .../app_service/public/cpp/app_update.cc      |  2 +-
- .../app_service/public/cpp/intent_filter.cc   | 53 +++++++++++++++++++
- .../app_service/public/cpp/intent_filter.h    | 41 +++++++-------
- 3 files changed, 77 insertions(+), 19 deletions(-)
+ .../app_service/public/cpp/intent_filter.cc   | 46 +++++++++++++++++++
+ .../app_service/public/cpp/intent_filter.h    | 22 +++++----
+ 3 files changed, 61 insertions(+), 9 deletions(-)
 
 diff --git a/components/services/app_service/public/cpp/app_update.cc b/components/services/app_service/public/cpp/app_update.cc
-index 723d349..57d17eb 100644
+index efb6a7f..1d703e1 100644
 --- a/components/services/app_service/public/cpp/app_update.cc
 +++ b/components/services/app_service/public/cpp/app_update.cc
-@@ -1028,7 +1028,7 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
-   out << "Paused: " << PRINT_OPTIONAL_VALUE(Paused) << std::endl;
+@@ -1055,7 +1055,7 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
+ 
    out << "IntentFilters: " << std::endl;
    for (const auto& filter : app.IntentFilters()) {
 -    out << filter << std::endl;
@@ -27,22 +27,13 @@ index 723d349..57d17eb 100644
  
    out << "ResizeLocked: " << PRINT_OPTIONAL_VALUE(ResizeLocked) << std::endl;
 diff --git a/components/services/app_service/public/cpp/intent_filter.cc b/components/services/app_service/public/cpp/intent_filter.cc
-index 7cc8315..df501c5 100644
+index 7cc8315..250ee6f 100644
 --- a/components/services/app_service/public/cpp/intent_filter.cc
 +++ b/components/services/app_service/public/cpp/intent_filter.cc
-@@ -6,6 +6,23 @@
+@@ -6,6 +6,14 @@
  
  namespace apps {
  
-+APP_ENUM_TO_STRING(PatternMatchType,
-+                   kNone,
-+                   kLiteral,
-+                   kPrefix,
-+                   kGlob,
-+                   kMimeType,
-+                   kFileExtension,
-+                   kIsDirectory,
-+                   kSuffix)
 +APP_ENUM_TO_STRING(ConditionType,
 +                   kScheme,
 +                   kHost,
@@ -54,40 +45,40 @@ index 7cc8315..df501c5 100644
  ConditionValue::ConditionValue(const std::string& value,
                                 PatternMatchType match_type)
      : value(value), match_type(match_type) {}
-@@ -20,6 +37,13 @@ bool ConditionValue::operator!=(const ConditionValue& other) const {
+@@ -20,6 +27,15 @@ bool ConditionValue::operator!=(const ConditionValue& other) const {
    return !(*this == other);
  }
  
 +std::string ConditionValue::ToString() const {
 +  std::stringstream out;
-+  out << "   match_type: " << EnumToString(match_type);
-+  out << " value: " << value << std::endl;
++  out << value;
++  if (match_type == PatternMatchType::kPrefix) {
++    out << "*";
++  }
 +  return out.str();
 +}
 +
  Condition::Condition(ConditionType condition_type,
                       ConditionValues condition_values)
      : condition_type(condition_type),
-@@ -55,6 +79,18 @@ ConditionPtr Condition::Clone() const {
+@@ -55,6 +73,16 @@ ConditionPtr Condition::Clone() const {
    return std::make_unique<Condition>(condition_type, std::move(values));
  }
  
 +std::string Condition::ToString() const {
 +  std::stringstream out;
-+  out << "  condition_type: " << EnumToString(condition_type) << std::endl;
-+  if (!condition_values.empty()) {
-+    out << "  condition_values: " << std::endl;
-+    for (const auto& condition_value : condition_values) {
-+      out << condition_value->ToString();
-+    }
++  out << " - " << EnumToString(condition_type) << ":";
++  for (const auto& condition_value : condition_values) {
++    out << " " << condition_value->ToString();
 +  }
++  out << std::endl;
 +  return out.str();
 +}
 +
  IntentFilter::IntentFilter() = default;
  IntentFilter::~IntentFilter() = default;
  
-@@ -186,6 +223,24 @@ bool IntentFilter::IsFileExtensionsFilter() {
+@@ -186,6 +214,24 @@ bool IntentFilter::IsFileExtensionsFilter() {
    return true;
  }
  
@@ -113,7 +104,7 @@ index 7cc8315..df501c5 100644
    IntentFilters ret;
    for (const auto& intent_filter : intent_filters) {
 diff --git a/components/services/app_service/public/cpp/intent_filter.h b/components/services/app_service/public/cpp/intent_filter.h
-index 042f43b..9d80966 100644
+index 042f43b..0639cfc 100644
 --- a/components/services/app_service/public/cpp/intent_filter.h
 +++ b/components/services/app_service/public/cpp/intent_filter.h
 @@ -12,6 +12,7 @@
@@ -124,7 +115,7 @@ index 042f43b..9d80966 100644
  #include "components/services/app_service/public/mojom/types.mojom.h"
  #include "third_party/abseil-cpp/absl/types/optional.h"
  
-@@ -31,26 +32,24 @@ enum class IntentFilterMatchLevel {
+@@ -31,14 +32,13 @@ enum class IntentFilterMatchLevel {
  };
  
  // The intent filter matching condition types.
@@ -145,29 +136,8 @@ index 042f43b..9d80966 100644
 +     kFile)      // Matches against all files.
  
  // The pattern match type for intent filter pattern condition.
--enum class PatternMatchType {
--  kNone = 0,
--  kLiteral,
--  kPrefix,
--  kGlob,
--  kMimeType,
--  kFileExtension,
--  kIsDirectory,
--  kSuffix
--};
-+ENUM(PatternMatchType,
-+     kNone = 0,
-+     kLiteral,
-+     kPrefix,
-+     kGlob,
-+     kMimeType,
-+     kFileExtension,
-+     kIsDirectory,
-+     kSuffix)
- 
- // For pattern type of condition, the value match will be based on the pattern
- // match type. If the match_type is kNone, then an exact match with the value
-@@ -64,6 +63,8 @@ struct COMPONENT_EXPORT(APP_TYPES) ConditionValue {
+ enum class PatternMatchType {
+@@ -64,6 +64,8 @@ struct COMPONENT_EXPORT(APP_TYPES) ConditionValue {
    bool operator==(const ConditionValue& other) const;
    bool operator!=(const ConditionValue& other) const;
  
@@ -176,7 +146,7 @@ index 042f43b..9d80966 100644
    std::string value;
    PatternMatchType match_type;  // This will be None for non pattern conditions.
  };
-@@ -85,6 +86,8 @@ struct COMPONENT_EXPORT(APP_TYPES) Condition {
+@@ -85,6 +87,8 @@ struct COMPONENT_EXPORT(APP_TYPES) Condition {
  
    std::unique_ptr<Condition> Clone() const;
  
@@ -185,7 +155,7 @@ index 042f43b..9d80966 100644
    ConditionType condition_type;
    ConditionValues condition_values;
  };
-@@ -129,6 +132,8 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
+@@ -129,6 +133,8 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
    // Returns true if the filter only contains file extension pattern matches.
    bool IsFileExtensionsFilter();
  
