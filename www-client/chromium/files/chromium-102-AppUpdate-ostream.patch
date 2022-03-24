@@ -45,12 +45,15 @@ index 7cc8315..250ee6f 100644
  ConditionValue::ConditionValue(const std::string& value,
                                 PatternMatchType match_type)
      : value(value), match_type(match_type) {}
-@@ -20,6 +27,15 @@ bool ConditionValue::operator!=(const ConditionValue& other) const {
+@@ -20,6 +30,18 @@ bool ConditionValue::operator!=(const ConditionValue& other) const {
    return !(*this == other);
  }
  
 +std::string ConditionValue::ToString() const {
 +  std::stringstream out;
++  if (match_type == PatternMatchType::kSuffix) {
++    out << "*";
++  }
 +  out << value;
 +  if (match_type == PatternMatchType::kPrefix) {
 +    out << "*";
@@ -95,7 +98,7 @@ index 7cc8315..250ee6f 100644
 +    for (const auto& condition : conditions) {
 +      out << condition->ToString();
 +    }
-+  out << std::endl;
++    out << std::endl;
 +  }
 +  return out.str();
 +}
