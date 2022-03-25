@@ -22,7 +22,7 @@ index efb6a7f..1d703e1 100644
    out << "IntentFilters: " << std::endl;
    for (const auto& filter : app.IntentFilters()) {
 -    out << filter << std::endl;
-+    out << filter->ToString();
++    out << filter->ToString() << std::endl;
    }
  
    out << "ResizeLocked: " << PRINT_OPTIONAL_VALUE(ResizeLocked) << std::endl;
@@ -64,7 +64,7 @@ index 7cc8315..250ee6f 100644
  Condition::Condition(ConditionType condition_type,
                       ConditionValues condition_values)
      : condition_type(condition_type),
-@@ -55,6 +73,16 @@ ConditionPtr Condition::Clone() const {
+@@ -55,6 +72,15 @@ ConditionPtr Condition::Clone() const {
    return std::make_unique<Condition>(condition_type, std::move(values));
  }
  
@@ -74,14 +74,13 @@ index 7cc8315..250ee6f 100644
 +  for (const auto& condition_value : condition_values) {
 +    out << " " << condition_value->ToString();
 +  }
-+  out << std::endl;
 +  return out.str();
 +}
 +
  IntentFilter::IntentFilter() = default;
  IntentFilter::~IntentFilter() = default;
  
-@@ -186,6 +214,24 @@ bool IntentFilter::IsFileExtensionsFilter() {
+@@ -186,6 +213,23 @@ bool IntentFilter::IsFileExtensionsFilter() {
    return true;
  }
  
@@ -96,9 +95,8 @@ index 7cc8315..250ee6f 100644
 +  if (!conditions.empty()) {
 +    out << " conditions:" << std::endl;
 +    for (const auto& condition : conditions) {
-+      out << condition->ToString();
++      out << condition->ToString() << std::endl;
 +    }
-+    out << std::endl;
 +  }
 +  return out.str();
 +}
