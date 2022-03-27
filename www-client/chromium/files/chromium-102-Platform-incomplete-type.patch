@@ -1,0 +1,36 @@
+From 6197c4d66af3077c1e022aad282e7c6d9485e8dc Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 27 Mar 2022 08:45:33 +0000
+Subject: [PATCH] libstdc++: fix incomplete type of
+ blink::WebDedicatedWorkerHostFactoryClient
+
+Destructor of std::unique_ptr in libstdc++ uses sizeof() which
+requires full definition of blink::WebDedicatedWorkerHostFactoryClient
+in blink::Platform.
+---
+ third_party/blink/public/platform/platform.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/blink/public/platform/platform.h b/third_party/blink/public/platform/platform.h
+index 8cc6400..ced2c8e 100644
+--- a/third_party/blink/public/platform/platform.h
++++ b/third_party/blink/public/platform/platform.h
+@@ -59,6 +59,7 @@
+ #include "third_party/blink/public/platform/web_code_cache_loader.h"
+ #include "third_party/blink/public/platform/web_common.h"
+ #include "third_party/blink/public/platform/web_data.h"
++#include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
+ #include "third_party/blink/public/platform/web_string.h"
+ #include "third_party/blink/public/platform/web_v8_value_converter.h"
+ #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
+@@ -133,7 +134,6 @@ class WebAudioBus;
+ class WebAudioLatencyHint;
+ class WebCrypto;
+ class WebDedicatedWorker;
+-class WebDedicatedWorkerHostFactoryClient;
+ class WebGraphicsContext3DProvider;
+ class WebLocalFrame;
+ class WebMediaCapabilitiesClient;
+-- 
+2.34.1
+
