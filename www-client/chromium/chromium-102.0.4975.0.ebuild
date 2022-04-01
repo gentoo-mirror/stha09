@@ -13,8 +13,8 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
-PATCHSET_NAME="chromium-101-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
@@ -254,9 +254,7 @@ src_prepare() {
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-gtk4-build.patch"
 		"${FILESDIR}/chromium-101-libxml-unbundle.patch"
-		"${FILESDIR}/chromium-102-AppUpdate-ostream.patch"
-		"${FILESDIR}/chromium-102-AccountCapabilities-NoDestructor.patch"
-		"${FILESDIR}/chromium-102-Shortcut-include.patch"
+		"${FILESDIR}/chromium-102-segmentation_platform-type.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
@@ -270,7 +268,7 @@ src_prepare() {
 	# only required to fulfill gn dependencies
 	touch third_party/blink/tools/merge_web_test_results.pydeps || die
 	mkdir -p third_party/blink/tools/blinkpy/web_tests || die
-	touch third_party/blink/tools/blinkpy/web_tests/merge_results.pydeps
+	touch third_party/blink/tools/blinkpy/web_tests/merge_results.pydeps || die
 
 	# adjust python interpreter version
 	sed -i -e "s|\(^script_executable = \).*|\1\"${EPYTHON}\"|g" .gn || die
@@ -469,6 +467,7 @@ src_prepare() {
 		third_party/swiftshader/third_party/marl
 		third_party/swiftshader/third_party/subzero
 		third_party/swiftshader/third_party/SPIRV-Headers/include/spirv/unified1
+		third_party/swiftshader/third_party/SPIRV-Tools
 		third_party/tensorflow-text
 		third_party/tflite
 		third_party/tflite/src/third_party/eigen3
