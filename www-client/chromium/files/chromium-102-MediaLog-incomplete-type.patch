@@ -1,0 +1,26 @@
+From 954b26c2a8a43ffc46affee975c59f25f12b6f72 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 13 Apr 2022 13:39:15 +0000
+Subject: [PATCH] libstdc++: fix incomplete type of media::MediaLog
+
+Destructor of std::unique_ptr in libstdc++ uses sizeof() which
+requires full definition of media::MediaLog in blink::Platform.
+---
+ third_party/blink/public/platform/platform.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/blink/public/platform/platform.h b/third_party/blink/public/platform/platform.h
+index 17df567..3ad783e 100644
+--- a/third_party/blink/public/platform/platform.h
++++ b/third_party/blink/public/platform/platform.h
+@@ -45,6 +45,7 @@
+ #include "media/base/audio_capturer_source.h"
+ #include "media/base/audio_latency.h"
+ #include "media/base/audio_renderer_sink.h"
++#include "media/base/media_log.h"
+ #include "third_party/abseil-cpp/absl/types/optional.h"
+ #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
+ #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+-- 
+2.35.1
+

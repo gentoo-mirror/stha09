@@ -13,7 +13,7 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="2"
+PATCHSET="3"
 PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
@@ -242,7 +242,9 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-102-view_utils-include.patch"
+		"chromium-102-CopyOrMoveHookDelegate-type.patch"
+		"chromium-102-Selector-noexcept.patch"
+		"chromium-102-UnsafeInputHandlers-type.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -255,9 +257,8 @@ src_prepare() {
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-gtk4-build.patch"
 		"${FILESDIR}/chromium-101-libxml-unbundle.patch"
-		"${FILESDIR}/chromium-102-CopyOrMoveHookDelegate-type.patch"
-		"${FILESDIR}/chromium-102-UnsafeInputHandlers-type.patch"
-		"${FILESDIR}/chromium-102-Selector-noexcept.patch"
+		"${FILESDIR}/chromium-102-MediaLog-incomplete-type.patch"
+		"${FILESDIR}/chromium-102-template_url_starter_pack_data-include.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
