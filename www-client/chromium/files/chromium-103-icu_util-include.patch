@@ -1,0 +1,24 @@
+From fb2cc88fe41801ecc5833555b2251cc4e8d81bf2 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 17 Apr 2022 07:40:10 +0000
+Subject: [PATCH] IWYU: add cstring for std::strlen in icu_util.cc
+
+---
+ base/i18n/icu_util.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/base/i18n/icu_util.cc b/base/i18n/icu_util.cc
+index 584044c..50a8450 100644
+--- a/base/i18n/icu_util.cc
++++ b/base/i18n/icu_util.cc
+@@ -10,6 +10,7 @@
+ #include <windows.h>
+ #endif
+ 
++#include <cstring>
+ #include <memory>
+ #include <string>
+ 
+-- 
+2.35.1
+
