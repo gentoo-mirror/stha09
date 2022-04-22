@@ -1,0 +1,29 @@
+From 06e0e7f2b91abbca88c927b1d238f44e2233b783 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 22 Apr 2022 18:14:08 +0000
+Subject: [PATCH] libstdc++: std::vector disallows const in
+ AccountSelectionBubbleView
+
+libstdc++ implementation of std::vector does not allow const members
+so this change replace usage of them in AccountSelectionBubbleView
+with non-const members.
+---
+ chrome/browser/ui/views/webid/account_selection_bubble_view.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/chrome/browser/ui/views/webid/account_selection_bubble_view.cc b/chrome/browser/ui/views/webid/account_selection_bubble_view.cc
+index e36aafb..884c7dc 100644
+--- a/chrome/browser/ui/views/webid/account_selection_bubble_view.cc
++++ b/chrome/browser/ui/views/webid/account_selection_bubble_view.cc
+@@ -267,7 +267,7 @@ void AccountSelectionBubbleView::OnSingleAccountPicked(
+   // being picked.
+   RemoveAllChildViews();
+   AddChildView(std::make_unique<views::Separator>());
+-  std::vector<const content::IdentityRequestAccount> accounts = {account};
++  std::vector<content::IdentityRequestAccount> accounts = {account};
+   AddChildView(CreateAccountChooser(accounts));
+   SizeToContents();
+   PreferredSizeChanged();
+-- 
+2.35.1
+

@@ -1,0 +1,30 @@
+From 0fd7d1525d01f6a1592c46d38a7ec6d1f348f295 Mon Sep 17 00:00:00 2001
+From: Victor Gomes <victorgomes@chromium.org>
+Date: Thu, 21 Apr 2022 14:40:45 +0200
+Subject: [PATCH] [maglev] Set properties as constexpr
+
+Fixes https://ci.chromium.org/ui/p/v8/builders/ci/V8%20Linux64%20-%20gcov%20coverage/29098/overview
+and https://ci.chromium.org/ui/p/v8/builders/ci/V8%20Linux64%20gcc%20-%20debug%20builder/1389/overview
+
+Bug: v8:7700
+Change-Id: I90717b9644b75cef28656893d37aa57e5f03e2fe
+Reviewed-on: https://chromium-review.googlesource.com/c/v8/v8/+/3599478
+Auto-Submit: Victor Gomes <victorgomes@chromium.org>
+Reviewed-by: Tobias Tebbi <tebbi@chromium.org>
+Commit-Queue: Tobias Tebbi <tebbi@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#80109}
+---
+
+diff --git a/v8/src/maglev/maglev-ir.h b/v8/src/maglev/maglev-ir.h
+index 9230ee1..ae38c20 100644
+--- a/v8/src/maglev/maglev-ir.h
++++ b/v8/src/maglev/maglev-ir.h
+@@ -453,7 +453,7 @@
+       OpProperties::Pure() | OpProperties::TaggedValue();
+ 
+   constexpr Opcode opcode() const { return OpcodeField::decode(bit_field_); }
+-  OpProperties properties() const {
++  constexpr OpProperties properties() const {
+     return OpPropertiesField::decode(bit_field_);
+   }
+ 
