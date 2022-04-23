@@ -1,0 +1,34 @@
+From a4bbeda973fbefc2ef07f578fb6da19d44a2c2cb Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 23 Apr 2022 13:48:42 +0000
+Subject: [PATCH] libstdc++: fix incomplete type of net::DatagramClientSocket
+
+Destructor of std::unique_ptr in libstdc++ uses sizeof() which
+requires full definition of net::DatagramClientSocket in
+net::BrokeredClientSocketFactory.
+---
+ services/network/brokered_client_socket_factory.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/network/brokered_client_socket_factory.cc b/services/network/brokered_client_socket_factory.cc
+index 9e6912b..5bd917b 100644
+--- a/services/network/brokered_client_socket_factory.cc
++++ b/services/network/brokered_client_socket_factory.cc
+@@ -8,13 +8,13 @@
+ #include "services/network/brokered_client_socket_factory.h"
+ 
+ #include "build/build_config.h"
++#include "net/socket/datagram_client_socket.h"
+ #include "net/socket/tcp_client_socket.h"
+ #include "services/network/tcp_client_socket_brokered.h"
+ 
+ namespace net {
+ 
+ class AddressList;
+-class DatagramClientSocket;
+ class HostPortPair;
+ class NetLog;
+ struct NetLogSource;
+-- 
+2.35.1
+
