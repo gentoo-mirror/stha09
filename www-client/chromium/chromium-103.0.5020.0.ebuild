@@ -261,6 +261,7 @@ src_prepare() {
 		"${FILESDIR}/chromium-103-AccountSelectionBubbleView-const.patch"
 		"${FILESDIR}/chromium-103-DatagramClientSocket-include.patch"
 		"${FILESDIR}/chromium-103-QueryProcessor-type.patch"
+		"${FILESDIR}/chromium-103-gcc-12.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
