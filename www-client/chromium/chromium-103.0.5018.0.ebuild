@@ -805,7 +805,7 @@ src_configure() {
 		fi
 	fi
 
-        # Disable opaque pointers, https://crbug.com/1316298
+	# Disable opaque pointers, https://crbug.com/1316298
 	if tc-is-clang; then
 		if test-flag-CXX -Xclang -no-opaque-pointers; then
 			append-flags -Xclang -no-opaque-pointers
@@ -816,7 +816,7 @@ src_configure() {
 		fi
 	fi
 
-        # Increase bracket depth, autofill requires at least 303, but default is 256.
+	# Increase bracket depth, autofill requires at least 303, but default is 256.
 	if tc-is-clang; then
 		append-cxxflags -fbracket-depth=350
 		if tc-is-cross-compiler; then

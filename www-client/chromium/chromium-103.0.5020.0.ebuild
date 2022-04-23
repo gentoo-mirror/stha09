@@ -13,22 +13,22 @@ inherit check-reqs chromium-2 desktop flag-o-matic ninja-utils pax-utils python-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
-PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
+PATCHSET="4"
+PATCHSET_NAME="chromium-102-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz"
 
 LICENSE="BSD"
 SLOT="0/canary"
 KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
+IUSE="+X component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
 REQUIRED_USE="
 	component-build? ( !suid !libcxx )
 	screencast? ( wayland )
+	!headless ( || ( X wayland ) )
 "
 
 COMMON_X_DEPEND="
-	x11-libs/gdk-pixbuf:2
 	x11-libs/libXcomposite:=
 	x11-libs/libXcursor:=
 	x11-libs/libXdamage:=
@@ -38,7 +38,6 @@ COMMON_X_DEPEND="
 	x11-libs/libXrender:=
 	x11-libs/libXtst:=
 	x11-libs/libxshmfence:=
-	virtual/opengl
 "
 
 COMMON_SNAPSHOT_DEPEND="
@@ -64,10 +63,12 @@ COMMON_SNAPSHOT_DEPEND="
 		pulseaudio? ( media-sound/pulseaudio:= )
 		sys-apps/pciutils:=
 		kerberos? ( virtual/krb5 )
-		vaapi? ( >=x11-libs/libva-2.7:=[X] )
-		x11-libs/libX11:=
-		x11-libs/libXext:=
-		x11-libs/libxcb:=
+		vaapi? ( >=x11-libs/libva-2.7:=[X?,wayland?] )
+		X? (
+			x11-libs/libX11:=
+			x11-libs/libXext:=
+			x11-libs/libxcb:=
+		)
 		x11-libs/libxkbcommon:=
 		wayland? (
 			dev-libs/wayland:=
@@ -93,31 +94,33 @@ COMMON_DEPEND="
 	media-libs/flac:=
 	sys-libs/zlib:=[minizip]
 	!headless? (
-		${COMMON_X_DEPEND}
+		X? ( ${COMMON_X_DEPEND} )
 		>=app-accessibility/at-spi2-atk-2.26:2
 		>=app-accessibility/at-spi2-core-2.26:2
 		>=dev-libs/atk-2.26
+		media-libs/mesa:=[X?,wayland?]
 		cups? ( >=net-print/cups-1.3.11:= )
 		virtual/udev
 		x11-libs/cairo:=
+		x11-libs/gdk-pixbuf:2
 		x11-libs/pango:=
 	)
 "
 RDEPEND="${COMMON_DEPEND}
 	!headless? (
 		|| (
-			x11-libs/gtk+:3[X,wayland?]
-			gui-libs/gtk:4[X,wayland?]
+			x11-libs/gtk+:3[X?,wayland?]
+			gui-libs/gtk:4[X?,wayland?]
 		)
+		x11-misc/xdg-utils
 	)
-	x11-misc/xdg-utils
 	virtual/ttf-fonts
 	selinux? ( sec-policy/selinux-chromium )
 "
 DEPEND="${COMMON_DEPEND}
 	!headless? (
-		gtk4? ( gui-libs/gtk:4[X,wayland?] )
-		!gtk4? ( x11-libs/gtk+:3[X,wayland?] )
+		gtk4? ( gui-libs/gtk:4[X?,wayland?] )
+		!gtk4? ( x11-libs/gtk+:3[X?,wayland?] )
 	)
 "
 BDEPEND="
@@ -242,9 +245,6 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-102-CopyOrMoveHookDelegate-type.patch"
-		"chromium-102-Selector-noexcept.patch"
-		"chromium-102-UnsafeInputHandlers-type.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -253,12 +253,14 @@ src_prepare() {
 	local PATCHES=(
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
-		"${FILESDIR}/chromium-97-arm-tflite-cast.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-gtk4-build.patch"
 		"${FILESDIR}/chromium-101-libxml-unbundle.patch"
-		"${FILESDIR}/chromium-102-MediaLog-incomplete-type.patch"
-		"${FILESDIR}/chromium-102-template_url_starter_pack_data-include.patch"
+		"${FILESDIR}/chromium-103-MediaLog-include.patch"
+		"${FILESDIR}/chromium-103-SourceLocation-include.patch"
+		"${FILESDIR}/chromium-103-AccountSelectionBubbleView-const.patch"
+		"${FILESDIR}/chromium-103-DatagramClientSocket-include.patch"
+		"${FILESDIR}/chromium-103-QueryProcessor-type.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
@@ -804,6 +806,26 @@ src_configure() {
 		fi
 	fi
 
+	# Disable opaque pointers, https://crbug.com/1316298
+	if tc-is-clang; then
+		if test-flag-CXX -Xclang -no-opaque-pointers; then
+			append-flags -Xclang -no-opaque-pointers
+			if tc-is-cross-compiler; then
+				export BUILD_CXXFLAGS+=" -Xclang -no-opaque-pointers"
+				export BUILD_CFLAGS+=" -Xclang -no-opaque-pointers"
+			fi
+		fi
+	fi
+
+	# Increase bracket depth, autofill requires at least 303, but default is 256.
+	if tc-is-clang; then
+		append-cxxflags -fbracket-depth=350
+		if tc-is-cross-compiler; then
+			export BUILD_CXXFLAGS+=" -fbracket-depth=350"
+			export BUILD_CFLAGS+=" -fbracket-depth=350"
+		fi
+	fi
+
 	# Explicitly disable ICU data file support for system-icu/headless builds.
 	if use system-icu || use headless; then
 		myconf_gn+=" icu_use_data_file=false"
@@ -812,25 +834,21 @@ src_configure() {
 	# Enable ozone wayland and/or headless support
 	myconf_gn+=" use_ozone=true ozone_auto_platforms=false"
 	myconf_gn+=" ozone_platform_headless=true"
-	myconf_gn+=" ozone_platform_x11=$(usex headless false true)"
-	if use wayland || use headless; then
-		if use headless; then
-			myconf_gn+=" ozone_platform=\"headless\""
-			myconf_gn+=" use_xkbcommon=false use_gtk=false"
-			myconf_gn+=" use_glib=false use_gio=false"
-			myconf_gn+=" use_pangocairo=false use_alsa=false"
-			myconf_gn+=" use_libpci=false use_udev=false"
-			myconf_gn+=" enable_print_preview=false"
-			myconf_gn+=" enable_remoting=false"
-		else
-			myconf_gn+=" ozone_platform_wayland=true"
-			myconf_gn+=" use_system_libdrm=true"
-			myconf_gn+=" use_system_minigbm=true"
-			myconf_gn+=" use_xkbcommon=true"
-			myconf_gn+=" ozone_platform=\"wayland\""
-		fi
+	if use headless; then
+		myconf_gn+=" ozone_platform=\"headless\""
+		myconf_gn+=" use_xkbcommon=false use_gtk=false"
+		myconf_gn+=" use_glib=false use_gio=false"
+		myconf_gn+=" use_pangocairo=false use_alsa=false"
+		myconf_gn+=" use_libpci=false use_udev=false"
+		myconf_gn+=" enable_print_preview=false"
+		myconf_gn+=" enable_remoting=false"
 	else
-		myconf_gn+=" ozone_platform=\"x11\""
+		myconf_gn+=" use_system_libdrm=true"
+		myconf_gn+=" use_system_minigbm=true"
+		myconf_gn+=" use_xkbcommon=true"
+		myconf_gn+=" ozone_platform_x11=$(usex X true false)"
+		myconf_gn+=" ozone_platform_wayland=$(usex wayland true false)"
+		myconf_gn+=" ozone_platform=$(usex wayland \"wayland\" \"x11\")"
 	fi
 
 	# Enable official builds
@@ -921,7 +939,7 @@ src_install() {
 	doexe out/Release/chrome_crashpad_handler
 
 	ozone_auto_session () {
-		use wayland && ! use headless && echo true || echo false
+		use X && use wayland && ! use headless && echo true || echo false
 	}
 	local sedargs=( -e
 			"s:/usr/lib/:/usr/$(get_libdir)/:g;
