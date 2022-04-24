@@ -1,0 +1,24 @@
+From ca637d224275f197609fddc63ae32791b35ce0f7 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 24 Apr 2022 11:50:48 +0000
+Subject: [PATCH] IWYU: add algorithm for std::sort in printing::PageRange
+
+---
+ printing/page_range.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/printing/page_range.cc b/printing/page_range.cc
+index e2b31bb..f469c58 100644
+--- a/printing/page_range.cc
++++ b/printing/page_range.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <stddef.h>
+ 
++#include <algorithm>
+ #include <set>
+ 
+ namespace printing {
+-- 
+2.35.1
+
