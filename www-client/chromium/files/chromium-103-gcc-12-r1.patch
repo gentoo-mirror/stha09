@@ -1,0 +1,29 @@
+GCC: add explicit template instantiation
+--- a/third_party/swiftshader/third_party/subzero/src/IceInstX8632.cpp
++++ b/third_party/swiftshader/third_party/subzero/src/IceInstX8632.cpp
+@@ -710,6 +710,11 @@ void emitIASRegOpTyGPR(const Cfg *Func, Type Ty, const Variable *Var,
+   }
+ }
+ 
++template void emitIASRegOpTyGPR<true, true>(const Cfg *Func, Type Ty,
++                                            const Variable *Var,
++                                            const Operand *Src,
++                                            const GPREmitterRegOp &Emitter);
++
+ void emitIASAddrOpTyGPR(const Cfg *Func, Type Ty, const AsmAddress &Addr,
+                         const Operand *Src, const GPREmitterAddrOp &Emitter) {
+   Assembler *Asm = Func->getAssembler<Assembler>();
+--- a/third_party/swiftshader/third_party/subzero/src/IceInstX8664.cpp
++++ b/third_party/swiftshader/third_party/subzero/src/IceInstX8664.cpp
+@@ -698,6 +698,11 @@ void emitIASRegOpTyGPR(const Cfg *Func, Type Ty, const Variable *Var,
+   }
+ }
+ 
++template void emitIASRegOpTyGPR<true, true>(const Cfg *Func, Type Ty,
++                                            const Variable *Var,
++                                            const Operand *Src,
++                                            const GPREmitterRegOp &Emitter);
++
+ void emitIASAddrOpTyGPR(const Cfg *Func, Type Ty, const AsmAddress &Addr,
+                         const Operand *Src, const GPREmitterAddrOp &Emitter) {
+   Assembler *Asm = Func->getAssembler<Assembler>();
