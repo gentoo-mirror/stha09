@@ -20,6 +20,3 @@ www-client/chromium:system-harfbuzz - Use system harfbuzz instead of the bundled
 www-client/chromium:system-icu - Use system icu instead of the bundled one
 www-client/chromium:system-png - Use system libpng instead of the bundled one.
 www-client/chromium:widevine - Unsupported closed-source DRM capability (required by Netflix VOD)
-www-client/chromium-bin:suid - Build the SUID sandbox, which is only needed on CONFIG_USER_NS=n kernels
-www-client/chromium-bin:swiftshader - Install SwiftShader OpenGL libaries.
-www-client/chromium-bin:widevine - Unsupported closed-source DRM capability (required by Netflix VOD)
