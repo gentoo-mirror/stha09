@@ -1,0 +1,26 @@
+From cc83580b56bf10d80f5b6c4dc3e6b1339da24063 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 7 May 2022 11:30:12 +0000
+Subject: [PATCH] IWYU: add algorithm for std::min in
+ remote_syscall_arg_handler
+
+---
+ sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc b/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc
+index 256586e..8b5a709 100644
+--- a/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc
++++ b/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc
+@@ -11,6 +11,8 @@
+ #include <sys/uio.h>
+ #include <unistd.h>
+ 
++#include <algorithm>
++
+ #include "base/bits.h"
+ #include "base/check_op.h"
+ #include "base/containers/span.h"
+-- 
+2.35.1
+
