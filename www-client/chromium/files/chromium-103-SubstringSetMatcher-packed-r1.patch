@@ -11,10 +11,10 @@ but it wasn't.
 Change-Id: Id9dff044c61f8e46062c63b8480b18ebc68c4862
 ---
 
-diff --git a/components/url_matcher/substring_set_matcher.cc b/components/url_matcher/substring_set_matcher.cc
+diff --git a/base/substring_set_matcher/substring_set_matcher.cc b/base/substring_set_matcher/substring_set_matcher.cc
 index e110047..ef0b750 100644
---- a/components/url_matcher/substring_set_matcher.cc
-+++ b/components/url_matcher/substring_set_matcher.cc
+--- a/base/substring_set_matcher/substring_set_matcher.cc
++++ b/base/substring_set_matcher/substring_set_matcher.cc
 @@ -424,7 +424,12 @@
      edges_.inline_edges[num_edges()] = AhoCorasickEdge{label, node};
      if (label == kFailureNodeLabel) {
@@ -29,10 +29,10 @@ index e110047..ef0b750 100644
      }
      --num_free_edges_;
      return;
-diff --git a/components/url_matcher/substring_set_matcher.cc b/components/url_matcher/substring_set_matcher.cc
+diff --git a/base/substring_set_matcher/substring_set_matcher.cc b/base/substring_set_matcher/substring_set_matcher.cc
 index e110047..ef0b750 100644
---- a/components/url_matcher/substring_set_matcher.h
-+++ b/components/url_matcher/substring_set_matcher.h
+--- a/base/substring_set_matcher/substring_set_matcher.h
++++ b/base/substring_set_matcher/substring_set_matcher.h
 @@ -154,8 +154,9 @@
    static constexpr uint32_t kEmptyLabel = 0x103;
  
