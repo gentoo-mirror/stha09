@@ -1,0 +1,29 @@
+From b956294c30da8f085750fa48c1e41f72e14a2756 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 18 May 2022 08:39:13 +0000
+Subject: [PATCH] GCC: fix ambiguous references in
+ AssistantSidePanelCoordinatorImpl
+
+Add class to avoid confusion.
+---
+ .../password_change/assistant_side_panel_coordinator_impl.h   | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/chrome/browser/ui/views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.h b/chrome/browser/ui/views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.h
+index 0de7ea7..933f0f3 100644
+--- a/chrome/browser/ui/views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.h
++++ b/chrome/browser/ui/views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.h
+@@ -35,8 +35,8 @@ class AssistantSidePanelCoordinatorImpl : public AssistantSidePanelCoordinator,
+ 
+  private:
+   std::unique_ptr<views::View> CreateSidePanelView();
+-  SidePanelCoordinator* SidePanelCoordinator();
+-  SidePanelRegistry* SidePanelRegistry();
++  class SidePanelCoordinator* SidePanelCoordinator();
++  class SidePanelRegistry* SidePanelRegistry();
+ 
+   raw_ptr<views::View> side_panel_view_host_ = nullptr;
+   // Used to store the view set by |SetView()| in case it is called before
+-- 
+2.35.1
+
