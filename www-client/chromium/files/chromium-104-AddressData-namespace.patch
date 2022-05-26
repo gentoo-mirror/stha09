@@ -1,0 +1,40 @@
+diff --git a/third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h b/third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h
+index 89d3273..fc327cf 100644
+--- a/third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h
++++ b/third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h
+@@ -86,11 +86,11 @@ struct AddressData {
+   static bool IsRepeatedFieldValue(AddressField field);
+ };
+ 
+-}  // namespace addressinput
+-}  // namespace i18n
+-
+ // Produces human-readable output in logging, for example in unit tests.
+ std::ostream& operator<<(std::ostream& o,
+                          const i18n::addressinput::AddressData& address);
+ 
++}  // namespace addressinput
++}  // namespace i18n
++
+ #endif  // I18N_ADDRESSINPUT_ADDRESS_DATA_H_
+diff --git a/third_party/libaddressinput/src/cpp/src/address_data.cc b/third_party/libaddressinput/src/cpp/src/address_data.cc
+index 074fbfd..6eb7d0f 100644
+--- a/third_party/libaddressinput/src/cpp/src/address_data.cc
++++ b/third_party/libaddressinput/src/cpp/src/address_data.cc
+@@ -123,9 +123,6 @@ bool AddressData::IsRepeatedFieldValue(AddressField field) {
+   return kVectorStringField[field] != nullptr;
+ }
+ 
+-}  // namespace addressinput
+-}  // namespace i18n
+-
+ std::ostream& operator<<(std::ostream& o,
+                          const i18n::addressinput::AddressData& address) {
+   o << "region_code: \"" << address.region_code << "\"\n"
+@@ -147,3 +144,6 @@ std::ostream& operator<<(std::ostream& o,
+ 
+   return o;
+ }
++
++}  // namespace addressinput
++}  // namespace i18n

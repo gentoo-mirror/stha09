@@ -1,0 +1,190 @@
+From 5b7efee11a51877af9d04bc6ec05144761711fae Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 2 Feb 2021 11:38:05 +0000
+Subject: [PATCH] GCC: fix ambiguous initialization with empty
+ brace-initializer
+
+GCC is confused with calling MatchesHeader() with empty
+brace-initializer for |window_ids| and |tab_ids|, because
+base and overloaded variants match. Add explicit std::vector<int>
+type in call to avoid confusion.
+
+Same happens with MatchesSyncedSession().
+---
+ .../local_session_event_handler_impl_unittest.cc |  6 +++---
+ .../sync_sessions/session_store_unittest.cc      | 16 ++++++++--------
+ .../session_sync_bridge_unittest.cc              |  4 ++--
+ .../synced_session_tracker_unittest.cc           | 16 ++++++++--------
+ 4 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/components/sync_sessions/local_session_event_handler_impl_unittest.cc b/components/sync_sessions/local_session_event_handler_impl_unittest.cc
+index bf867e7..4efd786 100644
+--- a/components/sync_sessions/local_session_event_handler_impl_unittest.cc
++++ b/components/sync_sessions/local_session_event_handler_impl_unittest.cc
+@@ -686,7 +686,7 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewCustomTab) {
+   // and is hence skipped.
+   auto tab_create_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+   EXPECT_CALL(*tab_create_mock_batch,
+-              Put(Pointee(MatchesHeader(kSessionTag, {}, {}))));
++              Put(Pointee(MatchesHeader(kSessionTag, std::vector<int>{}, std::vector<int>{}))));
+   EXPECT_CALL(*tab_create_mock_batch, Commit());
+ 
+   auto navigation_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+@@ -829,7 +829,7 @@ TEST_F(LocalSessionEventHandlerImplTest, ShouldRemoveAllTabsOnEmptyWindow) {
+   AddWindow(kWindowId3, sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
+ 
+   auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+-  EXPECT_CALL(*mock_batch, Put(Pointee(MatchesHeader(kSessionTag, {}, {}))));
++  EXPECT_CALL(*mock_batch, Put(Pointee(MatchesHeader(kSessionTag, std::vector<int>{}, std::vector<int>{}))));
+   EXPECT_CALL(*mock_batch, Delete(/*tab_node_id=*/kRegularTabNodeId));
+   EXPECT_CALL(*mock_batch, Delete(/*tab_node_id=*/kCustomTabNodeId));
+   EXPECT_CALL(*mock_batch, Commit());
+@@ -839,7 +839,7 @@ TEST_F(LocalSessionEventHandlerImplTest, ShouldRemoveAllTabsOnEmptyWindow) {
+ 
+   InitHandler();
+   EXPECT_THAT(session_tracker_.LookupSession(kSessionTag),
+-              MatchesSyncedSession(kSessionTag, {}));
++              MatchesSyncedSession(kSessionTag, std::map<int, std::vector<int>>{}));
+ }
+ 
+ }  // namespace
+diff --git a/components/sync_sessions/session_store_unittest.cc b/components/sync_sessions/session_store_unittest.cc
+index c7a3843..9777b48 100644
+--- a/components/sync_sessions/session_store_unittest.cc
++++ b/components/sync_sessions/session_store_unittest.cc
+@@ -293,15 +293,15 @@ TEST_F(SessionStoreTest, ShouldCreateLocalSession) {
+   EXPECT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+               ElementsAre(Pair(header_storage_key,
+                                EntityDataHasSpecifics(MatchesHeader(
+-                                   kLocalCacheGuid, /*window_ids=*/{},
+-                                   /*tab_ids=*/{})))));
++                                   kLocalCacheGuid, /*window_ids=*/std::vector<int>{},
++                                   /*tab_ids=*/std::vector<int>{})))));
+   // Verify that GetSessionDataForKeys() returns the header entity.
+   EXPECT_THAT(BatchToEntityDataMap(
+                   session_store()->GetSessionDataForKeys({header_storage_key})),
+               ElementsAre(Pair(header_storage_key,
+                                EntityDataHasSpecifics(MatchesHeader(
+-                                   kLocalCacheGuid, /*window_ids=*/{},
+-                                   /*tab_ids=*/{})))));
++                                   kLocalCacheGuid, /*window_ids=*/std::vector<int>{},
++                                   /*tab_ids=*/std::vector<int>{})))));
+ 
+   // Verify the underlying storage does NOT contain the data.
+   EXPECT_THAT(ReadAllPersistedDataFrom(underlying_store_.get()), IsEmpty());
+@@ -697,8 +697,8 @@ TEST_F(SessionStoreTest, ShouldReturnForeignUnmappedTabs) {
+                   Pair(local_header_storage_key, _),
+                   Pair(foreign_header_storage_key,
+                        EntityDataHasSpecifics(MatchesHeader(kForeignSessionTag,
+-                                                            /*window_ids=*/{},
+-                                                            /*tab_ids=*/{}))),
++                                                            /*window_ids=*/std::vector<int>{},
++                                                            /*tab_ids=*/std::vector<int>{}))),
+                   Pair(foreign_tab_storage_key,
+                        EntityDataHasSpecifics(MatchesTab(
+                            kForeignSessionTag, kWindowId, kTabId1, kTabNodeId1,
+@@ -753,8 +753,8 @@ TEST_F(SessionStoreTest, ShouldIgnoreForeignOrphanTabs) {
+                   Pair(local_header_storage_key, _),
+                   Pair(foreign_header_storage_key,
+                        EntityDataHasSpecifics(MatchesHeader(kForeignSessionTag,
+-                                                            /*window_ids=*/{},
+-                                                            /*tab_ids=*/{}))),
++                                                            /*window_ids=*/std::vector<int>{},
++                                                            /*tab_ids=*/std::vector<int>{}))),
+                   Pair(foreign_tab_storage_key2,
+                        EntityDataHasSpecifics(MatchesTab(
+                            kForeignSessionTag, kWindowId, kTabId, kTabNodeId2,
+diff --git a/components/sync_sessions/session_sync_bridge_unittest.cc b/components/sync_sessions/session_sync_bridge_unittest.cc
+index bb03500..f0163e2 100644
+--- a/components/sync_sessions/session_sync_bridge_unittest.cc
++++ b/components/sync_sessions/session_sync_bridge_unittest.cc
+@@ -362,8 +362,8 @@ TEST_F(SessionSyncBridgeTest, ShouldDeferLocalEventDueToSessionRestore) {
+   EXPECT_THAT(GetAllData(),
+               ElementsAre(Pair(
+                   _, EntityDataHasSpecifics(MatchesHeader(kLocalCacheGuid,
+-                                                          /*window_ids=*/{},
+-                                                          /*tab_ids=*/{})))));
++                                                          /*window_ids=*/std::vector<int>{},
++                                                          /*tab_ids=*/std::vector<int>{})))));
+ 
+   // Create the actual tab, which should be ignored because session restore
+   // is in progress.
+diff --git a/components/sync_sessions/synced_session_tracker_unittest.cc b/components/sync_sessions/synced_session_tracker_unittest.cc
+index b4a5e1e..3febdd7 100644
+--- a/components/sync_sessions/synced_session_tracker_unittest.cc
++++ b/components/sync_sessions/synced_session_tracker_unittest.cc
+@@ -908,7 +908,7 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithHeaderWithDuplicateTabIds) {
+   UpdateTrackerWithSpecifics(header, base::Time::Now(), &tracker_);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/{}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/std::map<int, std::vector<int>>{}));
+ }
+ 
+ // Verifies that an invalid tab (with invalid ID) is discarded.
+@@ -935,7 +935,7 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithHeaderWithDuplicateWindowId) {
+   UpdateTrackerWithSpecifics(header, base::Time::Now(), &tracker_);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/{}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/std::map<int, std::vector<int>>{}));
+ }
+ 
+ // Verifies that an invalid header with duplicated window IDs is ignored. It
+@@ -954,7 +954,7 @@ TEST_F(SyncedSessionTrackerTest,
+   UpdateTrackerWithSpecifics(header, base::Time::Now(), &tracker_);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/{}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/std::map<int, std::vector<int>>{}));
+ }
+ 
+ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTab) {
+@@ -972,7 +972,7 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTab) {
+   EXPECT_EQ(false, tracked_tab->pinned);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs*/std::map<int, std::vector<int>>{}));
+ 
+   // Overwrite some attribute.
+   tab.mutable_tab()->set_pinned(true);
+@@ -983,7 +983,7 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTab) {
+   EXPECT_EQ(true, tracked_tab->pinned);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs*/std::map<int, std::vector<int>>{}));
+ }
+ 
+ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTabThenHeader) {
+@@ -995,7 +995,7 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTabThenHeader) {
+   UpdateTrackerWithSpecifics(tab, base::Time::Now(), &tracker_);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs*/std::map<int, std::vector<int>>{}));
+ 
+   sync_pb::SessionSpecifics header;
+   header.set_session_tag(kTag);
+@@ -1031,7 +1031,7 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTwoTabsSameId) {
+   UpdateTrackerWithSpecifics(tab2, base::Time::Now(), &tracker_);
+ 
+   EXPECT_THAT(tracker_.LookupSession(kTag),
+-              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
++              MatchesSyncedSession(kTag, /*window_id_to_tabs*/std::map<int, std::vector<int>>{}));
+   EXPECT_THAT(tracker_.LookupTabNodeIds(kTag),
+               ElementsAre(kTabNode1, kTabNode2));
+ 
+@@ -1121,7 +1121,7 @@ TEST_F(SyncedSessionTrackerTest, SerializeTrackerToSpecificsWithEmptyHeader) {
+       callback;
+   EXPECT_CALL(callback,
+               Run(kSessionName, Pointee(MatchesHeader(kTag, /*window_ids=*/{},
+-                                                      /*tab_ids=*/{}))));
++                                                      /*tab_ids=*/std::vector<int>{}))));
+   EXPECT_CALL(
+       callback,
+       Run(kSessionName, Pointee(MatchesTab(kTag, /*window_id=*/0, kTab1.id(),
+-- 
+2.26.2
+
