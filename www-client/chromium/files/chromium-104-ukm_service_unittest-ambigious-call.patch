@@ -1,0 +1,30 @@
+diff --git a/components/ukm/ukm_service_unittest.cc b/components/ukm/ukm_service_unittest.cc
+index 4676b94..5ce7cb1 100644
+--- a/components/ukm/ukm_service_unittest.cc
++++ b/components/ukm/ukm_service_unittest.cc
+@@ -779,9 +779,9 @@ TEST_F(UkmServiceTest, RecordRedirectedUrl) {
+ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
+   const GURL kURL = GURL("https://example.com/");
+   for (bool restrict_to_whitelisted_source_ids : {true, false}) {
+-    ScopedUkmFeatureParams params(
+-        {{"RestrictToWhitelistedSourceIds",
+-          restrict_to_whitelisted_source_ids ? "true" : "false"}});
++    ScopedUkmFeatureParams params(base::FieldTrialParams{
++        {"RestrictToWhitelistedSourceIds",
++         restrict_to_whitelisted_source_ids ? "true" : "false"}});
+ 
+     ClearPrefs();
+     UkmService service(&prefs_, &client_,
+@@ -928,9 +928,9 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
+   const GURL kURL("https://google.com/foobar");
+   for (bool restrict_to_whitelisted_source_ids : {true, false}) {
+     // Set a threshold of number of Sources via Feature Params.
+-    ScopedUkmFeatureParams params(
+-        {{"RestrictToWhitelistedSourceIds",
+-          restrict_to_whitelisted_source_ids ? "true" : "false"}});
++    ScopedUkmFeatureParams params(base::FieldTrialParams{
++        {"RestrictToWhitelistedSourceIds",
++         restrict_to_whitelisted_source_ids ? "true" : "false"}});
+ 
+     ClearPrefs();
+     UkmService service(&prefs_, &client_,

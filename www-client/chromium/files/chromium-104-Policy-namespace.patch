@@ -1,0 +1,39 @@
+diff --git a/components/policy/core/common/policy_test_utils.cc b/components/policy/core/common/policy_test_utils.cc
+index 59cf85c..bf2bbee 100644
+--- a/components/policy/core/common/policy_test_utils.cc
++++ b/components/policy/core/common/policy_test_utils.cc
+@@ -126,8 +126,6 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
+ }
+ #endif  // BUILDFLAG(IS_APPLE)
+ 
+-}  // namespace policy
+-
+ std::ostream& operator<<(std::ostream& os, const policy::PolicyBundle& bundle) {
+   os << "{" << std::endl;
+   for (const auto& entry : bundle)
+@@ -188,3 +186,5 @@ std::ostream& operator<<(std::ostream& os, const policy::PolicyMap::Entry& e) {
+ std::ostream& operator<<(std::ostream& os, const policy::PolicyNamespace& ns) {
+   return os << ns.domain << "/" << ns.component_id;
+ }
++
++}  // namespace policy
+diff --git a/components/policy/core/common/policy_test_utils.h b/components/policy/core/common/policy_test_utils.h
+index e3ae7d6..9000d3b 100644
+--- a/components/policy/core/common/policy_test_utils.h
++++ b/components/policy/core/common/policy_test_utils.h
+@@ -59,8 +59,6 @@ CFPropertyListRef ValueToProperty(const base::Value& value);
+ 
+ #endif
+ 
+-}  // namespace policy
+-
+ std::ostream& operator<<(std::ostream& os, const policy::PolicyBundle& bundle);
+ std::ostream& operator<<(std::ostream& os, policy::PolicyScope scope);
+ std::ostream& operator<<(std::ostream& os, policy::PolicyLevel level);
+@@ -69,4 +67,6 @@ std::ostream& operator<<(std::ostream& os, const policy::PolicyMap& policies);
+ std::ostream& operator<<(std::ostream& os, const policy::PolicyMap::Entry& e);
+ std::ostream& operator<<(std::ostream& os, const policy::PolicyNamespace& ns);
+ 
++}  // namespace policy
++
+ #endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_TEST_UTILS_H_
