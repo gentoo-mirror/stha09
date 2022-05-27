@@ -16,8 +16,8 @@ inherit check-reqs chromium-2 desktop flag-o-matic llvm ninja-utils pax-utils py
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="3"
-PATCHSET_NAME="chromium-103-patchset-${PATCHSET}"
+PATCHSET="1"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
 	test? (
@@ -28,7 +28,7 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}
 
 LICENSE="BSD"
 SLOT="0/canary"
-KEYWORDS="~amd64 ~arm64 ~x86"
+KEYWORDS="~amd64 ~arm64"
 IUSE="+X component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx lto +official pic +proprietary-codecs pulseaudio screencast selinux +suid +system-ffmpeg +system-harfbuzz +system-icu +system-png test vaapi wayland widevine"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="
@@ -318,9 +318,6 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-103-SubstringSetMatcher-packed.patch"
-		"chromium-103-compiler.patch"
-		"chromium-103-FrameLoadRequest-type.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -331,7 +328,8 @@ src_prepare() {
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-98-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-98-gtk4-build.patch"
-		"${FILESDIR}/chromium-104-compiler.patch"
+		"${FILESDIR}/chromium-104-tflite-system-zlib.patch"
+		"${FILESDIR}/chromium-104-ContentRendererClient-type.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
@@ -940,6 +938,11 @@ src_configure() {
 		myconf_gn+=" ozone_platform_x11=$(usex X true false)"
 		myconf_gn+=" ozone_platform_wayland=$(usex wayland true false)"
 		myconf_gn+=" ozone_platform=$(usex wayland \"wayland\" \"x11\")"
+	fi
+
+	# Results in undefined references in chrome linking, may require CFI to work
+	if use arm64; then
+		myconf_gn+=" arm_control_flow_integrity=\"none\""
 	fi
 
 	# Enable official builds
