@@ -1,0 +1,27 @@
+From e938cc2a882d85fe9ae4bf2df53713d1192bd5ec Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 15 Jun 2022 12:53:53 +0000
+Subject: [PATCH] GCC: make kMessageHandlers const in pdf::PdfViewWebPlugin
+
+GCC requires an reinterpreted_cast for the second argument which
+isn't constexpr.
+---
+ pdf/pdf_view_web_plugin.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pdf/pdf_view_web_plugin.cc b/pdf/pdf_view_web_plugin.cc
+index f2b8726..451a3b8 100644
+--- a/pdf/pdf_view_web_plugin.cc
++++ b/pdf/pdf_view_web_plugin.cc
+@@ -875,7 +875,7 @@ PdfViewWebPlugin::CreateAssociatedURLLoader(
+ 
+ void PdfViewWebPlugin::OnMessage(const base::Value::Dict& message) {
+   using MessageHandler = void (PdfViewWebPlugin::*)(const base::Value::Dict&);
+-  static constexpr auto kMessageHandlers =
++  static const auto kMessageHandlers =
+       base::MakeFixedFlatMap<base::StringPiece, MessageHandler>({
+           {"displayAnnotations",
+            &PdfViewWebPlugin::HandleDisplayAnnotationsMessage},
+-- 
+2.35.1
+
