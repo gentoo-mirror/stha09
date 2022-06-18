@@ -1,0 +1,24 @@
+From 7e8c3eb54a6eac123ed1740a807bffeb3f3b3f0f Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 17 Jun 2022 19:26:12 +0000
+Subject: [PATCH] IWYU: add memory for std::unique_ptr in PageTracker
+
+---
+ chrome/test/chromedriver/chrome/page_tracker.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/chrome/test/chromedriver/chrome/page_tracker.h b/chrome/test/chromedriver/chrome/page_tracker.h
+index 89da5b0..b2d11af 100644
+--- a/chrome/test/chromedriver/chrome/page_tracker.h
++++ b/chrome/test/chromedriver/chrome/page_tracker.h
+@@ -6,6 +6,7 @@
+ #define CHROME_TEST_CHROMEDRIVER_CHROME_PAGE_TRACKER_H_
+ 
+ #include <list>
++#include <memory>
+ #include <string>
+ 
+ #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
+-- 
+2.35.1
+
