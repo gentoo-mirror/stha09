@@ -1,0 +1,32 @@
+From 4b98211752bb8f4bd7ccef2dba0e836492dc776d Mon Sep 17 00:00:00 2001
+From: Ivan Murashov <ivan.murashov@lge.com>
+Date: Fri, 23 Sep 2022 14:51:56 +0000
+Subject: [PATCH] GCC: Make DIPSDatabase::in_memory() not constexpr
+
+GCC build fails because of using a non-constexpr inside a
+constexpr:
+chrome/browser/dips/dips_database.h:56:59: error:
+call to non-'constexpr' function 'bool base::FilePath::empty() const'
+Made DIPSDatabase::in_memory() not constexpr to resolve the issue.
+
+Bug: 819294
+Change-Id: Icd71df87943e88ca2e56df2f278b5107641d6e3a
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/3916084
+Reviewed-by: Joshua Hood <jdh@chromium.org>
+Commit-Queue: Ivan Murashov <ivan.murashov@lge.com>
+Cr-Commit-Position: refs/heads/main@{#1050638}
+---
+
+diff --git a/chrome/browser/dips/dips_database.h b/chrome/browser/dips/dips_database.h
+index 6a6fce8..8210b17b 100644
+--- a/chrome/browser/dips/dips_database.h
++++ b/chrome/browser/dips/dips_database.h
+@@ -53,7 +53,7 @@
+   // executes successfully.
+   bool RemoveRow(const std::string& site);
+ 
+-  constexpr bool in_memory() const { return db_path_.empty(); }
++  bool in_memory() const { return db_path_.empty(); }
+ 
+  protected:
+   // Initialization functions --------------------------------------------------
