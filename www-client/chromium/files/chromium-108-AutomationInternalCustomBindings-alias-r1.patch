@@ -1,0 +1,58 @@
+From c5ce3163c21d6258d2b63d25feb9649e8566d8c9 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 29 Sep 2022 14:57:57 +0000
+Subject: [PATCH] GCC: fix ambiguous references in
+ AutomationInternalCustomBindings
+
+Add namespace to avoid confusion.
+---
+ .../automation_internal_custom_bindings.cc           |  4 ++--
+ .../automation/automation_internal_custom_bindings.h | 12 +++++++-----
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/extensions/renderer/api/automation/automation_internal_custom_bindings.cc b/extensions/renderer/api/automation/automation_internal_custom_bindings.cc
+index 7b75fd4..bffb7c7 100644
+--- a/extensions/renderer/api/automation/automation_internal_custom_bindings.cc
++++ b/extensions/renderer/api/automation/automation_internal_custom_bindings.cc
+@@ -551,14 +551,14 @@ v8::Local<v8::Context> AutomationInternalCustomBindings::GetContext() const {
+ 
+ void AutomationInternalCustomBindings::RouteHandlerFunction(
+     const std::string& name,
+-    HandlerFunction handler_function) {
++    AutomationV8Router::HandlerFunction handler_function) {
+   ObjectBackedNativeHandler::RouteHandlerFunction(name, handler_function);
+ }
+ 
+ void AutomationInternalCustomBindings::RouteHandlerFunction(
+     const std::string& name,
+     const std::string& api_name,
+-    HandlerFunction handler_function) {
++    AutomationV8Router::HandlerFunction handler_function) {
+   ObjectBackedNativeHandler::RouteHandlerFunction(name, api_name,
+                                                   handler_function);
+ }
+diff --git a/extensions/renderer/api/automation/automation_internal_custom_bindings.h b/extensions/renderer/api/automation/automation_internal_custom_bindings.h
+index a317de7..ce4a432 100644
+--- a/extensions/renderer/api/automation/automation_internal_custom_bindings.h
++++ b/extensions/renderer/api/automation/automation_internal_custom_bindings.h
+@@ -76,11 +76,13 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
+   void ThrowInvalidArgumentsException(bool is_fatal = true) const override;
+   v8::Isolate* GetIsolate() const override;
+   v8::Local<v8::Context> GetContext() const override;
+-  void RouteHandlerFunction(const std::string& name,
+-                            HandlerFunction handler_function) override;
+-  void RouteHandlerFunction(const std::string& name,
+-                            const std::string& api_name,
+-                            HandlerFunction handler_function) override;
++  void RouteHandlerFunction(
++      const std::string& name,
++      AutomationV8Router::HandlerFunction handler_function) override;
++  void RouteHandlerFunction(
++      const std::string& name,
++      const std::string& api_name,
++      AutomationV8Router::HandlerFunction handler_function) override;
+   std::tuple<ax::mojom::Event, ui::AXEventGenerator::Event> ParseEventType(
+       const std::string& event_type) const override;
+   ui::TreeChangeObserverFilter ParseTreeChangeObserverFilter(
+-- 
+2.35.1

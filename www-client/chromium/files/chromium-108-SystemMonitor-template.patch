@@ -1,0 +1,27 @@
+From c1172e0b1dd7fb733fdbcc67b2586ac62ecdca05 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 29 Sep 2022 20:13:25 +0000
+Subject: [PATCH] GCC: remove redundant template parameter in
+ performance_monitor::SystemMonitor
+
+GCC 12 in C++20 mode does not allow this anymore.
+---
+ chrome/browser/performance_monitor/system_monitor.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/chrome/browser/performance_monitor/system_monitor.h b/chrome/browser/performance_monitor/system_monitor.h
+index b2ba2a5..a96376d 100644
+--- a/chrome/browser/performance_monitor/system_monitor.h
++++ b/chrome/browser/performance_monitor/system_monitor.h
+@@ -159,7 +159,7 @@ class SystemMonitor {
+     using ObserverArgType =
+         typename std::conditional<std::is_scalar<T>::value, T, const T&>::type;
+ 
+-    MetricEvaluatorImpl<T>(
++    MetricEvaluatorImpl(
+         Type type,
+         base::OnceCallback<absl::optional<T>()> evaluate_function,
+         void (SystemObserver::*notify_function)(ObserverArgType));
+-- 
+2.35.1
+

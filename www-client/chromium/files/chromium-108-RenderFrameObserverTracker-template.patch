@@ -1,0 +1,27 @@
+From 5886f99bf932b1ba3a4f5084d6003a64272e2695 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 29 Sep 2022 19:29:33 +0000
+Subject: [PATCH] GCC: remove redundant template parameter in
+ content::RenderFrameObserverTracker
+
+GCC 12 in C++20 mode does not allow this anymore.
+---
+ content/public/renderer/render_frame_observer_tracker.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/content/public/renderer/render_frame_observer_tracker.h b/content/public/renderer/render_frame_observer_tracker.h
+index a7dff95..67f059b 100644
+--- a/content/public/renderer/render_frame_observer_tracker.h
++++ b/content/public/renderer/render_frame_observer_tracker.h
+@@ -46,7 +46,7 @@ class RenderFrameObserverTracker {
+     render_frame_map_.Get()[render_frame] = this;
+   }
+ 
+-  RenderFrameObserverTracker<T>(const RenderFrameObserverTracker<T>&) = delete;
++  RenderFrameObserverTracker(const RenderFrameObserverTracker<T>&) = delete;
+   RenderFrameObserverTracker<T>& operator=(
+       const RenderFrameObserverTracker<T>&) = delete;
+ 
+-- 
+2.35.1
+

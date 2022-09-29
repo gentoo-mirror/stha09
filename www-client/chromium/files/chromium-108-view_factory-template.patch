@@ -1,0 +1,35 @@
+From d45d1b930df4fbafdd439063976a11cf278ca1c9 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 29 Sep 2022 19:06:25 +0000
+Subject: [PATCH] GCC: remove redundant template parameter in view_factory
+
+GCC 12 in C++20 does not allow this anymore.
+---
+ ui/views/metadata/view_factory.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ui/views/metadata/view_factory.h b/ui/views/metadata/view_factory.h
+index 039d93e..73efb13 100644
+--- a/ui/views/metadata/view_factory.h
++++ b/ui/views/metadata/view_factory.h
+@@ -469,14 +469,14 @@ namespace views {                                                       \
+    private:                                                             \
+     using ViewClass_ = view_class;                                      \
+    public:                                                              \
+-    Builder<ViewClass_>() = default;                                    \
++    Builder() = default;                                                \
+     explicit Builder<ViewClass_>(ViewClass_* root_view)                 \
+         : view_class##BuilderT<Builder<ViewClass_>>(root_view) {}       \
+     explicit Builder<ViewClass_>(std::unique_ptr<ViewClass_> view)      \
+         : view_class##BuilderT<Builder<ViewClass_>>(std::move(view)) {} \
+-    Builder<ViewClass_>(Builder&&) = default;                           \
++    Builder(Builder&&) = default;                                       \
+     Builder<ViewClass_>& operator=(Builder<ViewClass_>&&) = default;    \
+-    ~Builder<ViewClass_>() = default;                                   \
++    ~Builder() = default;                                               \
+     [[nodiscard]] std::unique_ptr<internal::ViewBuilderCore> Release()  \
+         override {                                                      \
+       return std::make_unique<Builder<view_class>>(std::move(*this));   \
+-- 
+2.35.1
+
