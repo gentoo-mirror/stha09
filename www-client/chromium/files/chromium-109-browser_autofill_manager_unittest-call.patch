@@ -1,0 +1,28 @@
+From d698428e25cfeac21bb5da15529d5171fe5d7adb Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 25 Oct 2022 18:29:58 +0000
+Subject: [PATCH] libstdc++: fix call to SetFieldTypes in
+ browser_autofill_manager_unittest
+
+Call to SetFieldTypes is ambiguous with libstdc++ due to std::vector
+implementation.
+---
+ .../autofill/core/browser/browser_autofill_manager_unittest.cc  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/autofill/core/browser/browser_autofill_manager_unittest.cc b/components/autofill/core/browser/browser_autofill_manager_unittest.cc
+index d6a1e1e..4269120 100644
+--- a/components/autofill/core/browser/browser_autofill_manager_unittest.cc
++++ b/components/autofill/core/browser/browser_autofill_manager_unittest.cc
+@@ -8916,7 +8916,7 @@ TEST_P(BrowserAutofillManagerContextMenuImpressionsTest,
+   // Override the types and simulate seeing the form on page load.
+   auto form_structure = std::make_unique<FormStructure>(form);
+   FormStructureTestApi(form_structure.get())
+-      .SetFieldTypes({test_case.heuristic_type}, {test_case.server_type});
++      .SetFieldTypes(std::vector<ServerFieldType>{test_case.heuristic_type}, {test_case.server_type});
+   browser_autofill_manager_->AddSeenFormStructure(std::move(form_structure));
+ 
+   // Simulate context menu trigger for all the fields.
+-- 
+2.37.4
+
