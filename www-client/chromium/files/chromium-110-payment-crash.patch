@@ -1,0 +1,39 @@
+diff --git a/components/payments/content/utility/payment_manifest_parser.cc b/components/payments/content/utility/payment_manifest_parser.cc
+index e4e1d26..3130c1b 100644
+--- a/components/payments/content/utility/payment_manifest_parser.cc
++++ b/components/payments/content/utility/payment_manifest_parser.cc
+@@ -386,6 +386,11 @@ void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
+   DCHECK(web_app_manifest_urls);
+   DCHECK(supported_origins);
+ 
++  if (!value) {
++    log.Error("Payment method manifest is invalid.");
++    return;
++  }
++
+   const base::Value::Dict* dict = value->GetIfDict();
+   if (!dict) {
+     log.Error("Payment method manifest must be a JSON dictionary.");
+@@ -409,6 +414,10 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
+     std::unique_ptr<base::Value> value,
+     const ErrorLogger& log,
+     std::vector<WebAppManifestSection>* output) {
++  if (!value) {
++    log.Error("Web app manifest is invalid.");
++    return false;
++  }
+   const base::Value::Dict* dict = value->GetIfDict();
+   if (!dict) {
+     log.Error("Web app manifest must be a JSON dictionary.");
+@@ -544,6 +544,11 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
+   DCHECK(installation_info);
+   DCHECK(icons);
+ 
++  if (!value) {
++    log.Error("Web app manifest is invalid.");
++    return false;
++  }
++
+   const base::Value::Dict* dict = value->GetIfDict();
+   if (!dict) {
+     log.Error("Web app manifest must be a JSON dictionary.");

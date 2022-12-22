@@ -10,14 +10,16 @@ CHROMIUM_LANGS="af am ar bg bn ca cs da de el en-GB es es-419 et fa fi fil fr gu
 	hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr
 	sv sw ta te th tr uk ur vi zh-CN zh-TW"
 
-VIRTUALX_REQUIRED="manual"
+VIRTUALX_REQUIRED="pgo"
 
-inherit check-reqs chromium-2 desktop flag-o-matic llvm ninja-utils pax-utils python-any-r1 qmake-utils readme.gentoo-r1 toolchain-funcs virtualx xdg-utils
+inherit check-reqs chromium-2 desktop flag-o-matic llvm ninja-utils pax-utils
+inherit python-any-r1 qmake-utils readme.gentoo-r1 toolchain-funcs virtualx xdg-utils
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 PATCHSET="2"
-PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
+#PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
+PATCHSET_NAME="chromium-108-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
 	test? (
@@ -29,7 +31,7 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}
 
 LICENSE="BSD"
 SLOT="0/canary"
-KEYWORDS="~amd64 ~arm64"
+KEYWORDS="~amd64"
 IUSE="+X component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx lto +official pgo pic +proprietary-codecs pulseaudio qt5 screencast selinux +suid +system-av1 +system-ffmpeg +system-harfbuzz +system-icu +system-png test vaapi wayland widevine"
 RESTRICT="test"
 REQUIRED_USE="
@@ -63,7 +65,7 @@ COMMON_SNAPSHOT_DEPEND="
 	>=media-libs/freetype-2.11.0-r1:=
 	system-harfbuzz? ( >=media-libs/harfbuzz-3:0=[icu(-)] )
 	media-libs/libjpeg-turbo:=
-	system-png? ( media-libs/libpng:=[-apng] )
+	system-png? ( media-libs/libpng:=[-apng(-)] )
 	>=media-libs/libwebp-0.4.0:=
 	media-libs/mesa:=[gbm(+)]
 	>=media-libs/openh264-1.6.0:=
@@ -79,7 +81,7 @@ COMMON_SNAPSHOT_DEPEND="
 		pulseaudio? ( media-sound/pulseaudio:= )
 		sys-apps/pciutils:=
 		kerberos? ( virtual/krb5 )
-		vaapi? ( >=x11-libs/libva-2.7:=[X?,wayland?] )
+		vaapi? ( >=media-libs/libva-2.7:=[X?,wayland?] )
 		X? (
 			x11-libs/libX11:=
 			x11-libs/libXext:=
@@ -87,7 +89,7 @@ COMMON_SNAPSHOT_DEPEND="
 		)
 		x11-libs/libxkbcommon:=
 		wayland? (
-			dev-libs/wayland:=
+			dev-libs/libffi:=
 			screencast? ( media-video/pipewire:= )
 		)
 	)
@@ -111,10 +113,7 @@ COMMON_DEPEND="
 	sys-libs/zlib:=[minizip]
 	!headless? (
 		X? ( ${COMMON_X_DEPEND} )
-		|| (
-			>=app-accessibility/at-spi2-core-2.46.0:2
-			( app-accessibility/at-spi2-atk dev-libs/atk )
-		)
+		>=app-accessibility/at-spi2-core-2.46.0:2
 		media-libs/mesa:=[X?,wayland?]
 		cups? ( >=net-print/cups-1.3.11:= )
 		virtual/udev
@@ -173,7 +172,16 @@ BDEPEND="
 	$(python_gen_any_dep '
 		dev-python/setuptools[${PYTHON_USEDEP}]
 	')
-	test? ( ${VIRTUALX_DEPEND} )
+	test? (
+		x11-apps/xhost
+		x11-base/xorg-server[xvfb]
+		x11-misc/xcompmgr
+		x11-wm/openbox
+		wayland? ( dev-libs/weston[X,headless] )
+		$(python_gen_any_dep '
+			dev-python/psutil[${PYTHON_USEDEP}]
+		')
+	)
 	>=app-arch/gzip-1.7
 	libcxx? ( >=sys-devel/clang-13 )
 	lto? ( $(depend_clang_llvm_versions 13 14 15) )
@@ -236,7 +244,10 @@ in /etc/chromium/default.
 "
 
 python_check_deps() {
-	python_has_version "dev-python/setuptools[${PYTHON_USEDEP}]"
+	python_has_version "dev-python/setuptools[${PYTHON_USEDEP}]" || return
+	if use test; then
+		python_has_version "dev-python/psutil[${PYTHON_USEDEP}]" || return
+	fi
 }
 
 needs_clang() {
@@ -337,8 +348,23 @@ src_prepare() {
 		done
 	fi
 
+	# some web pages are crashing
+	if use system-icu; then
+		sed -i -e \
+			"/\"TextCodecCJKEnabled\",/{n;s/ENABLED/DISABLED/;}" \
+			"third_party/blink/common/features.cc" || die
+	fi
+
+	# disable global media controls, crashes with libstdc++
+	sed -i -e \
+		"/\"GlobalMediaControlsCastStartStop\",/{n;s/ENABLED/DISABLED/;}" \
+		"third_party/blink/common/features.cc" || die
+
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
+		"chromium-108-LabToLCH-include.patch"
+		"chromium-108-crashpad-template.patch"
+		"chromium-108-compiler.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -348,8 +374,11 @@ src_prepare() {
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-98-gtk4-build.patch"
-		"${FILESDIR}/chromium-107-system-zlib.patch"
+		"${FILESDIR}/chromium-109-system-zlib.patch"
 		"${FILESDIR}/chromium-108-EnumTable-crash.patch"
+		"${FILESDIR}/chromium-109-system-openh264.patch"
+		"${FILESDIR}/chromium-110-compiler.patch"
+		"${FILESDIR}/chromium-110-Presenter-include.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
@@ -357,12 +386,8 @@ src_prepare() {
 
 	if use test; then
 		PATCHES+=(
-			"${FILESDIR}/chromium-104-AddressData-namespace.patch"
-			"${FILESDIR}/chromium-104-PasswordMap-type.patch"
-			"${FILESDIR}/chromium-104-ukm_service_unittest-ambigious-call.patch"
-			"${FILESDIR}/chromium-104-mock_autocomplete_provider_client-include.patch"
-			"${FILESDIR}/chromium-104-Policy-namespace.patch"
-			"${FILESDIR}/chromium-104-web_bundle_parser_unittest-tuple.patch"
+			"${FILESDIR}/chromium-110-payment-crash.patch"
+			"${FILESDIR}/chromium-109-browser_autofill_manager_unittest-call.patch"
 			"${FILESDIR}/chromium-104-session-ambiguous-call.patch"
 		)
 	fi
@@ -374,6 +399,7 @@ src_prepare() {
 
 	# adjust python interpreter version
 	sed -i -e "s|\(^script_executable = \).*|\1\"${EPYTHON}\"|g" .gn || die
+	sed -i -e "s|vpython3|${EPYTHON}|g" testing/xvfb.py || die
 
 	local keeplibs=(
 		base/third_party/cityhash
@@ -396,11 +422,10 @@ src_prepare() {
 		net/third_party/uri_template
 		third_party/abseil-cpp
 		third_party/angle
-		third_party/angle/src/common/third_party/base
-		third_party/angle/src/common/third_party/smhasher
 		third_party/angle/src/common/third_party/xxhash
+		third_party/angle/src/third_party/ceval
 		third_party/angle/src/third_party/libXNVCtrl
-		third_party/angle/src/third_party/trace_event
+		third_party/angle/src/third_party/systeminfo
 		third_party/angle/src/third_party/volk
 		third_party/apple_apsl
 		third_party/axe-core
@@ -449,11 +474,12 @@ src_prepare() {
 		third_party/devtools-frontend/src/front_end/third_party/diff
 		third_party/devtools-frontend/src/front_end/third_party/i18n
 		third_party/devtools-frontend/src/front_end/third_party/intl-messageformat
+		third_party/devtools-frontend/src/front_end/third_party/lit
 		third_party/devtools-frontend/src/front_end/third_party/lighthouse
-		third_party/devtools-frontend/src/front_end/third_party/lit-html
 		third_party/devtools-frontend/src/front_end/third_party/lodash-isequal
 		third_party/devtools-frontend/src/front_end/third_party/marked
 		third_party/devtools-frontend/src/front_end/third_party/puppeteer
+		third_party/devtools-frontend/src/front_end/third_party/puppeteer/package/lib/esm/third_party/mitt
 		third_party/devtools-frontend/src/front_end/third_party/wasmparser
 		third_party/devtools-frontend/src/test/unittests/front_end/third_party/i18n
 		third_party/devtools-frontend/src/third_party
@@ -491,7 +517,6 @@ src_prepare() {
 		third_party/libevent
 		third_party/libgav1
 		third_party/libjingle
-		third_party/libjxl
 		third_party/libphonenumber
 		third_party/libsecret
 		third_party/libsrtp
@@ -535,7 +560,6 @@ src_prepare() {
 		third_party/pdfium/third_party/freetype
 		third_party/pdfium/third_party/lcms
 		third_party/pdfium/third_party/libopenjpeg
-		third_party/pdfium/third_party/libpng16
 		third_party/pdfium/third_party/libtiff
 		third_party/pdfium/third_party/skia_shared
 		third_party/perfetto
@@ -546,13 +570,14 @@ src_prepare() {
 		third_party/private-join-and-compute
 		third_party/private_membership
 		third_party/protobuf
-		third_party/protobuf/third_party/six
 		third_party/pthreadpool
 		third_party/pyjson5
+		third_party/pyyaml
 		third_party/qcms
 		third_party/rnnoise
 		third_party/s2cellid
 		third_party/securemessage
+		third_party/selenium-atoms
 		third_party/shell-encryption
 		third_party/simplejson
 		third_party/skia
@@ -568,6 +593,7 @@ src_prepare() {
 		third_party/swiftshader/third_party/subzero
 		third_party/swiftshader/third_party/SPIRV-Headers/include/spirv
 		third_party/swiftshader/third_party/SPIRV-Tools
+		third_party/tensorflow_models
 		third_party/tensorflow-text
 		third_party/tflite
 		third_party/tflite/src/third_party/eigen3
@@ -578,6 +604,7 @@ src_prepare() {
 		third_party/unrar
 		third_party/utf
 		third_party/vulkan
+		third_party/wayland
 		third_party/web-animations-js
 		third_party/webdriver
 		third_party/webgpu-cts
@@ -619,10 +646,11 @@ src_prepare() {
 		keeplibs+=( third_party/libpng )
 	fi
 	if ! use system-av1; then
-		keep_libs+=(
+		keeplibs+=(
 			third_party/dav1d
 			third_party/libaom
 			third_party/libaom/source/libaom/third_party/fastfeat
+			third_party/libaom/source/libaom/third_party/SVT-AV1
 			third_party/libaom/source/libaom/third_party/vector
 			third_party/libaom/source/libaom/third_party/x86inc
 		)
@@ -633,11 +661,10 @@ src_prepare() {
 	if use libcxx; then
 		keeplibs+=( third_party/re2 )
 	fi
-	if use wayland && ! use headless ; then
-		keeplibs+=( third_party/wayland )
-	fi
 	if use test; then
 		keeplibs+=(
+			third_party/chaijs
+			third_party/mocha
 			third_party/test_fonts
 			third_party/quic_trace
 		)
@@ -964,15 +991,21 @@ chromium_configure() {
 		myconf_gn+=" use_system_libdrm=true"
 		myconf_gn+=" use_system_minigbm=true"
 		myconf_gn+=" use_xkbcommon=true"
-		use qt5 && export PATH="${PATH}:$(qt5_get_bindir)"
+		if use qt5; then
+			local moc_dir="$(qt5_get_bindir)"
+			if tc-is-cross-compiler; then
+				# Hack to workaround get_libdir not being able to handle CBUILD, bug #794181
+				local cbuild_libdir=$($(tc-getBUILD_PKG_CONFIG) --keep-system-libs --libs-only-L libxslt)
+				cbuild_libdir=${cbuild_libdir:2}
+				moc_dir="${EPREFIX}"/${cbuild_libdir/% }/qt5/bin
+			fi
+			export PATH="${PATH}:${moc_dir}"
+		fi
 		myconf_gn+=" use_qt=$(usex qt5 true false)"
 		myconf_gn+=" ozone_platform_x11=$(usex X true false)"
 		myconf_gn+=" ozone_platform_wayland=$(usex wayland true false)"
 		myconf_gn+=" ozone_platform=$(usex wayland \"wayland\" \"x11\")"
-		if use wayland; then
-			myconf_gn+=" use_system_libwayland_server=true"
-			myconf_gn+=" use_system_wayland_scanner=true"
-		fi
+		use wayland && myconf_gn+=" use_system_libffi=true"
 	fi
 
 	# Results in undefined references in chrome linking, may require CFI to work
@@ -1035,8 +1068,6 @@ chromium_compile() {
 	# Don't inherit PYTHONPATH from environment, bug #789021, #812689
 	local -x PYTHONPATH=
 
-	#"${EPYTHON}" tools/clang/scripts/update.py --force-local-build --gcc-toolchain /usr --skip-checkout --use-system-cmake --without-android || die
-
 	# Build mksnapshot and pax-mark it.
 	local x
 	for x in mksnapshot v8_context_snapshot_generator; do
@@ -1053,10 +1084,6 @@ chromium_compile() {
 	# user's options, for debugging with -j 1 or any other reason.
 	eninja -C out/Release chrome chromedriver
 	use suid && eninja -C out/Release chrome_sandbox
-
-	if use test; then
-		eninja -C out/Release components_unittests
-	fi
 
 	pax-mark m out/Release/chrome
 }
@@ -1114,7 +1141,7 @@ src_compile() {
 	fi
 
 	if use test; then
-		eninja -C out/Release components_unittests
+		eninja -C out/Release components_unittests content_unittests extensions_unittests
 	fi
 
 	mv out/Release/chromedriver{.unstripped,} || die
@@ -1146,7 +1173,11 @@ src_test() {
 
 	adddeny "/proc/self/status"
 
-	virtx out/Release/components_unittests || die
+	local xvfb_args=""
+	use wayland && xvfb_args="--no-xvfb --use-weston"
+
+	testing/xvfb.py ${xvfb_args} out/Release/extensions_unittests || die
+	testing/xvfb.py ${xvfb_args} out/Release/components_unittests || die
 }
 
 src_install() {
