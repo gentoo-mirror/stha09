@@ -31,7 +31,7 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}
 
 LICENSE="BSD"
 SLOT="0/canary"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~arm64"
 IUSE="+X component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx lto +official pgo pic +proprietary-codecs pulseaudio qt5 screencast selinux +suid +system-av1 +system-ffmpeg +system-harfbuzz +system-icu +system-png test vaapi wayland widevine"
 RESTRICT="test"
 REQUIRED_USE="
