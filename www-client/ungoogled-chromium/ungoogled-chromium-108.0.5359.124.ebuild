@@ -27,7 +27,7 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P#
 LICENSE="BSD"
 SLOT="0/stable"
 KEYWORDS="~amd64 ~arm64"
-IUSE="+X component-build cups cpu_flags_arm_neon custom-cflags debug gtk4 headless kerberos libcxx lto +official pgo pic +proprietary-codecs pulseaudio qt5 screencast selinux +suid +system-av1 +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
+IUSE="+X component-build cups cpu_flags_arm_neon custom-cflags debug gtk4 headless kerberos libcxx lto +official pgo +proprietary-codecs pulseaudio qt5 screencast selinux +suid +system-av1 +system-ffmpeg +system-harfbuzz +system-icu +system-png vaapi wayland widevine"
 REQUIRED_USE="
 	component-build? ( !suid !libcxx )
 	screencast? ( wayland )
@@ -899,23 +899,6 @@ chromium_configure() {
 
 	# https://bugs.gentoo.org/654216
 	addpredict /dev/dri/ #nowarn
-
-	#if ! use system-ffmpeg; then
-	if false; then
-		local build_ffmpeg_args=""
-		if use pic && [[ "${ffmpeg_target_arch}" == "ia32" ]]; then
-			build_ffmpeg_args+=" --disable-asm"
-		fi
-
-		# Re-configure bundled ffmpeg. See bug #491378 for example reasons.
-		einfo "Configuring bundled ffmpeg..."
-		pushd third_party/ffmpeg > /dev/null || die
-		chromium/scripts/build_ffmpeg.py linux ${ffmpeg_target_arch} \
-			--branding ${ffmpeg_branding} -- ${build_ffmpeg_args} || die
-		chromium/scripts/copy_config.sh || die
-		chromium/scripts/generate_gn.py || die
-		popd > /dev/null || die
-	fi
 
 	# Disable unknown warning message from clang.
 	if tc-is-clang; then
