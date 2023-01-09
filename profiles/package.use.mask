@@ -1,0 +1,25 @@
+# Copyright 2023 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+# New entries go on top.
+
+# This file is only for generic masks. For arch-specific masks (i.e.
+# mask everywhere, unmask on arch/*) use arch/base.
+
+# Stephan Hartmann <stha09@googlemail.com> (2023-01-09)
+# Not ready for general use.
+www-client/ungoogled-chromium pgo
+
+# Stephan Hartmann <stha09@googlemail.com> (2023-01-09)
+# Uses a function that is not available in media-video/ffmpeg.
+www-client/ungoogled-chromium system-ffmpeg
+
+# Stephan Hartmann <stha09@googlemail.com> (2023-01-09)
+# Mostly intended for development and not for general use.
+www-client/ungoogled-chromium headless
+
+# Stephan Hartmann <stha09@googlemail.com> (2023-01-09)
+# Mostly intended for debugging and development,
+# not recommended for general use. Build is also often
+# broken.
+www-client/ungoogled-chromium component-build
