@@ -1,8 +1,8 @@
-# Copyright 2009-2022 Gentoo Authors
+# Copyright 2009-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{9..11} )
 PYTHON_REQ_USE="xml(+)"
 LLVM_MAX_SLOT=15
 
@@ -90,6 +90,7 @@ COMMON_SNAPSHOT_DEPEND="
 
 COMMON_DEPEND="
 	${COMMON_SNAPSHOT_DEPEND}
+	!www-client/chromium
 	app-arch/bzip2:=
 	dev-libs/expat:=
 	system-ffmpeg? (
@@ -120,7 +121,6 @@ COMMON_DEPEND="
 	)
 "
 RDEPEND="${COMMON_DEPEND}
-	!www-client/chromium
 	!headless? (
 		|| (
 			x11-libs/gtk+:3[X?,wayland?]
@@ -269,6 +269,10 @@ pre_build_checks() {
 			if ! ver_test "$(clang-major-version)" -ge 13; then
 				die "At least clang 13 is required"
 			fi
+			# bug #889374
+			if ! use libcxx; then
+				die "Builds using clang fail with USE=-libcxx"
+			fi
 		fi
 	fi
 
@@ -320,33 +324,22 @@ src_prepare() {
 	# Calling this here supports resumption via FEATURES=keepwork
 	python_setup
 
+	# disable global media controls, crashes with libstdc++
+	sed -i -e \
+		"/\"GlobalMediaControlsCastStartStop\",/{n;s/ENABLED/DISABLED/;}" \
+		"chrome/browser/media/router/media_router_feature.cc" || die
+
 	local PATCHES=(
 		"${WORKDIR}/patches"
 		"${FILESDIR}/chromium-93-InkDropHost-crash.patch"
 		"${FILESDIR}/chromium-98-gtk4-build.patch"
-		"${FILESDIR}/chromium-107-system-zlib.patch"
 		"${FILESDIR}/chromium-108-EnumTable-crash.patch"
-		"${FILESDIR}/chromium-108-revert-GlobalMediaControlsCastStartStop.patch"
-		"${FILESDIR}/chromium-108-DocumentLoader-private.patch"
+		"${FILESDIR}/chromium-109-system-zlib.patch"
+		"${FILESDIR}/chromium-109-system-openh264.patch"
+		"${FILESDIR}/chromium-109-system-icu.patch"
 		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
 	)
-
-	# Applied upstream, can drop on next patchset creation
-	rm "${WORKDIR}/patches/chromium-108-LabToLCH-include.patch" || die
-
-	if use ppc64 ; then
-		local p
-		for p in $(grep -v "^#" "${WORKDIR}"/debian/patches/series | grep "^ppc64le" || die); do
-			if [[ $p =~ "fix-breakpad-compile.patch" ]]; then
-				eapply "${FILESDIR}/ppc64le/fix-breakpad-compile.patch"
-			else
-				eapply "${WORKDIR}/debian/patches/${p}"
-			fi
-		done
-		eapply "${FILESDIR}/ppc64le/libpng-pdfium-compile-98.patch"
-		eapply "${FILESDIR}/ppc64le/fix-swiftshader-compile.patch"
-	fi
 
 	pushd "${WORKDIR}"/${P}-1 >/dev/null || die
 	# Remove unneeded binaries
@@ -450,6 +443,7 @@ src_prepare() {
 		third_party/devtools-frontend/src/front_end/third_party/lodash-isequal
 		third_party/devtools-frontend/src/front_end/third_party/marked
 		third_party/devtools-frontend/src/front_end/third_party/puppeteer
+		third_party/devtools-frontend/src/front_end/third_party/puppeteer/package/lib/esm/third_party/mitt
 		third_party/devtools-frontend/src/front_end/third_party/wasmparser
 		third_party/devtools-frontend/src/test/unittests/front_end/third_party/i18n
 		third_party/devtools-frontend/src/third_party
@@ -545,10 +539,12 @@ src_prepare() {
 		third_party/protobuf/third_party/six
 		third_party/pthreadpool
 		third_party/pyjson5
+		third_party/pyyaml
 		third_party/qcms
 		third_party/rnnoise
 		third_party/s2cellid
 		third_party/securemessage
+		third_party/selenium-atoms
 		third_party/shell-encryption
 		third_party/simplejson
 		third_party/skia
