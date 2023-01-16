@@ -1,4 +1,4 @@
-# Copyright 2009-2022 Gentoo Authors
+# Copyright 2009-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -18,8 +18,7 @@ inherit python-any-r1 qmake-utils readme.gentoo-r1 toolchain-funcs virtualx xdg-
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
 PATCHSET="1"
-#PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
-PATCHSET_NAME="chromium-110-patchset-${PATCHSET}"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
 	test? (
@@ -27,7 +26,7 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium/chromium-test_fonts.tar.gz
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium/chromium-hunspell_dictionaries.tar.xz
 	)
-	pgo? ( https://blackhole.sk/~kabel/src/chromium-profiler-0.1.tar )"
+	pgo? ( https://github.com/elkablo/chromium-profiler/releases/download/v0.2/chromium-profiler-0.2.tar )"
 
 LICENSE="BSD"
 SLOT="0/canary"
@@ -133,7 +132,6 @@ RDEPEND="${COMMON_DEPEND}
 			gui-libs/gtk:4[X?,wayland?]
 		)
 		qt5? ( dev-qt/qtgui:5[X?,wayland?] )
-		x11-misc/xdg-utils
 	)
 	virtual/ttf-fonts
 	selinux? ( sec-policy/selinux-chromium )
@@ -284,6 +282,10 @@ pre_build_checks() {
 			if ! ver_test "$(clang-major-version)" -ge 13; then
 				die "At least clang 13 is required"
 			fi
+			# bug #889374
+			if ! use libcxx; then
+				die "Builds using clang fail with USE=-libcxx"
+			fi
 		fi
 		if [[ ${EBUILD_PHASE_FUNC} == pkg_setup ]] && use js-type-check; then
 			"${BROOT}"/usr/bin/java -version 2>1 > /dev/null || die "Java VM not setup correctly"
@@ -347,31 +349,15 @@ src_prepare() {
 		done
 	fi
 
-	# some web pages are crashing
-	if use system-icu; then
-		sed -i -e \
-			"/\"TextCodecCJKEnabled\",/{n;s/ENABLED/DISABLED/;}" \
-			"third_party/blink/common/features.cc" || die
-	fi
-
 	# disable global media controls, crashes with libstdc++
 	sed -i -e \
 		"/\"GlobalMediaControlsCastStartStop\",/{n;s/ENABLED/DISABLED/;}" \
-		"third_party/blink/common/features.cc" || die
+		"chrome/browser/media/router/media_router_feature.cc" || die
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-110-v8-gcc.patch"
-		"chromium-110-CanvasResourceProvider-pragma.patch"
-		"chromium-110-NativeThemeBase-fabs.patch"
-		"chromium-110-kCustomizeChromeColors-type.patch"
-		"chromium-110-url_canon_internal-cast.patch"
-		"chromium-110-raw_ptr-constexpr.patch"
-		"chromium-110-InProgressDownloadManager-include.patch"
-		"chromium-110-SyncIterator-template.patch"
-		"chromium-110-XYZD50ToLab-pow.patch"
-		"chromium-110-CredentialUIEntry-const.patch"
-		"chromium-110-general_names-include.patch"
+		"chromium-110-DarkModeLABColorSpace-pow.patch"
+		"chromium-111-Section-include.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -385,7 +371,6 @@ src_prepare() {
 		"${FILESDIR}/chromium-109-system-zlib.patch"
 		"${FILESDIR}/chromium-109-system-openh264.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
-		"${FILESDIR}/chromium-shim_headers.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
 	)
 
@@ -544,6 +529,7 @@ src_prepare() {
 		third_party/maldoca/src/third_party/tensorflow_protos
 		third_party/maldoca/src/third_party/zlibwrapper
 		third_party/markupsafe
+		third_party/material_color_utilities
 		third_party/mesa
 		third_party/metrics_proto
 		third_party/minigbm
@@ -774,6 +760,15 @@ chromium_configure() {
 	else
 		myconf_gn+=" host_toolchain=\"//build/toolchain/linux/unbundle:default\""
 	fi
+
+	# Create dummy pkg-config file for libsystemd, only dependency of installer
+	mkdir "${T}/libsystemd" || die
+	cat <<- EOF > "${T}/libsystemd/libsystemd.pc"
+		Name:
+		Description:
+		Version:
+	EOF
+	local -x PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+"${PKG_CONFIG_PATH}:"}${T}/libsystemd"
 
 	# GN needs explicit config for Debug/Release as opposed to inferring it from build directory.
 	myconf_gn+=" is_debug=false"
@@ -1236,6 +1231,9 @@ src_install() {
 		local files=(out/Release/*.so out/Release/*.so.[0-9])
 		[[ ${#files[@]} -gt 0 ]] && doins "${files[@]}"
 	)
+
+	# Install bundled xdg-utils, avoids installing X11 libraries with USE="-X wayland"
+	doins out/Release/xdg-{settings,mime}
 
 	if ! use system-icu && ! use headless; then
 		doins out/Release/icudtl.dat
