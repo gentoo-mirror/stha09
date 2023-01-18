@@ -2,8 +2,6 @@
 # Please add your descriptions to your package's metadata.xml ONLY.
 # * generated automatically using pmaint *
 
-net-im/teams-insiders:swiftshader - Install SwiftShader OpenGL libaries.
-net-im/teams-insiders:system-ffmpeg - Use system ffmpeg instead of the bundled one.
 www-client/chromium:component-build - Split build into more shared libraries to speed up linking. Mostly intended for debugging and development, NOT RECOMMENDED for general use.
 www-client/chromium:debug - Enable DCHECK feature with severity configurable at runtime. Mostly intended for debugging and development, NOT RECOMMENDED for general use.
 www-client/chromium:gtk4 - Build with GTK4 headers.
