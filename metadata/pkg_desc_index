@@ -1,4 +1,4 @@
 app-misc/coolero 0.13.3: Coolero is a program to monitor and control your cooling devices
 dev-python/pyamdgpuinfo 2.1.3: AMD GPU information
-www-client/chromium 111.0.5534.0 111.0.5536.0 111.0.5538.0 111.0.5540.0 111.0.5542.0 111.0.5544.0: Open-source version of Google Chrome web browser
+www-client/chromium 111.0.5534.0 111.0.5536.0 111.0.5538.0 111.0.5540.0 111.0.5542.0 111.0.5544.0 111.0.5547.0: Open-source version of Google Chrome web browser
 www-client/ungoogled-chromium 109.0.5414.74: Open-source version of Google Chrome web browser
