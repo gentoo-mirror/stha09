@@ -1,4 +1,4 @@
-# Copyright 2009-2022 Gentoo Authors
+# Copyright 2009-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -17,9 +17,8 @@ inherit python-any-r1 qmake-utils readme.gentoo-r1 toolchain-funcs virtualx xdg-
 
 DESCRIPTION="Open-source version of Google Chrome web browser"
 HOMEPAGE="https://chromium.org/"
-PATCHSET="1"
-#PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
-PATCHSET_NAME="chromium-110-patchset-${PATCHSET}"
+PATCHSET="2"
+PATCHSET_NAME="chromium-$(ver_cut 1)-patchset-${PATCHSET}"
 SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.xz
 	https://github.com/stha09/chromium-patches/releases/download/${PATCHSET_NAME}/${PATCHSET_NAME}.tar.xz
 	test? (
@@ -27,12 +26,12 @@ SRC_URI="https://commondatastorage.googleapis.com/chromium-browser-official/${P}
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium/chromium-test_fonts.tar.gz
 		https://dev.gentoo.org/~sultan/distfiles/www-client/chromium/chromium-hunspell_dictionaries.tar.xz
 	)
-	pgo? ( https://blackhole.sk/~kabel/src/chromium-profiler-0.1.tar )"
+	pgo? ( https://github.com/elkablo/chromium-profiler/releases/download/v0.2/chromium-profiler-0.2.tar )"
 
 LICENSE="BSD"
 SLOT="0/canary"
 KEYWORDS="~amd64 ~arm64"
-IUSE="+X component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless +js-type-check kerberos libcxx lto +official pgo pic +proprietary-codecs pulseaudio qt5 screencast selinux +suid +system-av1 +system-ffmpeg +system-harfbuzz +system-icu +system-png test vaapi wayland widevine"
+IUSE="+X component-build cups cpu_flags_arm_neon debug gtk4 +hangouts headless kerberos libcxx lto +official pgo pic +proprietary-codecs pulseaudio qt5 screencast selinux +suid +system-av1 +system-ffmpeg +system-harfbuzz +system-icu +system-png test vaapi wayland widevine"
 RESTRICT="test"
 REQUIRED_USE="
 	component-build? ( !suid !libcxx )
@@ -182,6 +181,9 @@ BDEPEND="
 		')
 	)
 	>=app-arch/gzip-1.7
+	!headless? (
+		qt5? ( dev-qt/qtcore:5 )
+	)
 	libcxx? ( >=sys-devel/clang-13 )
 	lto? ( $(depend_clang_llvm_versions 13 14 15) )
 	pgo? (
@@ -198,7 +200,6 @@ BDEPEND="
 	>=sys-devel/bison-2.4.3
 	sys-devel/flex
 	virtual/pkgconfig
-	js-type-check? ( virtual/jre )
 "
 
 # These are intended for ebuild maintainer use to force clang if GCC is broken.
@@ -283,13 +284,6 @@ pre_build_checks() {
 			if ! ver_test "$(clang-major-version)" -ge 13; then
 				die "At least clang 13 is required"
 			fi
-			# bug #889374
-			if ! use libcxx; then
-				die "Builds using clang fail with USE=-libcxx"
-			fi
-		fi
-		if [[ ${EBUILD_PHASE_FUNC} == pkg_setup ]] && use js-type-check; then
-			"${BROOT}"/usr/bin/java -version 2>1 > /dev/null || die "Java VM not setup correctly"
 		fi
 	fi
 
@@ -357,17 +351,8 @@ src_prepare() {
 
 	# remove unneeded/merged/updated patches
 	local UNUSED_PATCHES=(
-		"chromium-110-v8-gcc.patch"
-		"chromium-110-CanvasResourceProvider-pragma.patch"
-		"chromium-110-NativeThemeBase-fabs.patch"
-		"chromium-110-kCustomizeChromeColors-type.patch"
-		"chromium-110-url_canon_internal-cast.patch"
-		"chromium-110-raw_ptr-constexpr.patch"
-		"chromium-110-InProgressDownloadManager-include.patch"
-		"chromium-110-SyncIterator-template.patch"
-		"chromium-110-XYZD50ToLab-pow.patch"
-		"chromium-110-CredentialUIEntry-const.patch"
-		"chromium-110-general_names-include.patch"
+		"chromium-110-dpf-arm64.patch"
+		"chromium-111-v8-std-layout1.patch"
 	)
 	for patch in "${UNUSED_PATCHES[@]}"; do
 		rm "${WORKDIR}/patches/${patch}" || die
@@ -380,8 +365,7 @@ src_prepare() {
 		"${FILESDIR}/chromium-108-EnumTable-crash.patch"
 		"${FILESDIR}/chromium-109-system-zlib.patch"
 		"${FILESDIR}/chromium-109-system-openh264.patch"
-		"${FILESDIR}/chromium-109-system-icu.patch"
-		"${FILESDIR}/chromium-111-Section-include.patch"
+		"${FILESDIR}/chromium-111-promise_app_registry_cache-include.patch"
 		"${FILESDIR}/chromium-use-oauth2-client-switches-as-default.patch"
 		"${FILESDIR}/chromium-cross-compile.patch"
 	)
@@ -696,10 +680,6 @@ src_prepare() {
 	# Remove most bundled libraries. Some are still needed.
 	build/linux/unbundle/remove_bundled_libraries.py "${keeplibs[@]}" --do-remove || die
 
-	if use js-type-check; then
-		ln -s "${EPREFIX}"/usr/bin/java third_party/jdk/current/bin/java || die
-	fi
-
 	# bundled eu-strip is for amd64 only and we don't want to pre-stripped binaries
 	mkdir -p buildtools/third_party/eu-strip/bin || die
 	ln -s "${EPREFIX}"/bin/true buildtools/third_party/eu-strip/bin/eu-strip || die
@@ -773,6 +753,15 @@ chromium_configure() {
 		myconf_gn+=" host_toolchain=\"//build/toolchain/linux/unbundle:default\""
 	fi
 
+	# Create dummy pkg-config file for libsystemd, only dependency of installer
+	mkdir "${T}/libsystemd" || die
+	cat <<- EOF > "${T}/libsystemd/libsystemd.pc"
+		Name:
+		Description:
+		Version:
+	EOF
+	local -x PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+"${PKG_CONFIG_PATH}:"}${T}/libsystemd"
+
 	# GN needs explicit config for Debug/Release as opposed to inferring it from build directory.
 	myconf_gn+=" is_debug=false"
 
@@ -834,7 +823,6 @@ chromium_configure() {
 	myconf_gn+=" use_gnome_keyring=false"
 
 	# Optional dependencies.
-	myconf_gn+=" enable_js_type_check=$(usex js-type-check true false)"
 	myconf_gn+=" enable_hangout_services_extension=$(usex hangouts true false)"
 	myconf_gn+=" enable_widevine=$(usex widevine true false)"
 

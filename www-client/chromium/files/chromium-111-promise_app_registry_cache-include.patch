@@ -1,0 +1,25 @@
+From 7260b85815ee3580a411ab70b10913f84a1480f4 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 21 Jan 2023 12:54:57 +0000
+Subject: [PATCH] IWYU: add memory for std::unique_ptr in
+ promise_app_registry_cache
+
+---
+ .../apps/app_service/promise_apps/promise_app_registry_cache.h   | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h b/chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h
+index 8c0f1b9..0530784 100644
+--- a/chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h
++++ b/chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h
+@@ -5,6 +5,7 @@
+ #define CHROME_BROWSER_APPS_APP_SERVICE_PROMISE_APPS_PROMISE_APP_REGISTRY_CACHE_H_
+ 
+ #include <map>
++#include <memory>
+ 
+ namespace apps {
+ 
+-- 
+2.39.1
+
