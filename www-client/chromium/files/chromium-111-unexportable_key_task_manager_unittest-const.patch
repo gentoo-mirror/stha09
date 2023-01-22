@@ -1,0 +1,45 @@
+From 5a7fdbf5955026872d2afa8ea9440e2e5f94679b Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 21 Jan 2023 16:49:30 +0000
+Subject: [PATCH] libstdc++: remove const in
+ unexportable_key_task_manager_unittest
+
+libstdc++ requires non-const value_type for std::vector.
+---
+ .../unexportable_key_task_manager_unittest.cc               | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/components/unexportable_keys/unexportable_key_task_manager_unittest.cc b/components/unexportable_keys/unexportable_key_task_manager_unittest.cc
+index 48943e0..54bece9 100644
+--- a/components/unexportable_keys/unexportable_key_task_manager_unittest.cc
++++ b/components/unexportable_keys/unexportable_key_task_manager_unittest.cc
+@@ -79,7 +79,7 @@ TEST_F(UnexportableKeyTaskManagerTest, FromWrappedKeyAsync) {
+ TEST_F(UnexportableKeyTaskManagerTest, FromWrappedKeyAsync_Failure) {
+   base::test::TestFuture<scoped_refptr<RefCountedUnexportableSigningKey>>
+       future;
+-  std::vector<const uint8_t> empty_wrapped_key;
++  std::vector<uint8_t> empty_wrapped_key;
+   task_manager().FromWrappedSigningKeySlowlyAsync(
+       empty_wrapped_key, BackgroundTaskPriority::kBestEffort,
+       future.GetCallback());
+@@ -98,7 +98,7 @@ TEST_F(UnexportableKeyTaskManagerTest, SignAsync) {
+ 
+   // Second, sign some data with the key.
+   base::test::TestFuture<absl::optional<std::vector<uint8_t>>> sign_future;
+-  std::vector<const uint8_t> data = {4, 8, 15, 16, 23, 42};
++  std::vector<uint8_t> data = {4, 8, 15, 16, 23, 42};
+   task_manager().SignSlowlyAsync(key, data, BackgroundTaskPriority::kBestEffort,
+                                  sign_future.GetCallback());
+   const auto& signed_data = sign_future.Get();
+@@ -114,7 +114,7 @@ TEST_F(UnexportableKeyTaskManagerTest, SignAsync) {
+ 
+ TEST_F(UnexportableKeyTaskManagerTest, SignAsync_NullKey) {
+   base::test::TestFuture<absl::optional<std::vector<uint8_t>>> sign_future;
+-  std::vector<const uint8_t> data = {4, 8, 15, 16, 23, 42};
++  std::vector<uint8_t> data = {4, 8, 15, 16, 23, 42};
+   task_manager().SignSlowlyAsync(nullptr, data,
+                                  BackgroundTaskPriority::kBestEffort,
+                                  sign_future.GetCallback());
+-- 
+2.39.1
+
