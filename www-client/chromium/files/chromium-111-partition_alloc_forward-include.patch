@@ -1,0 +1,24 @@
+From b7fb330225848b1341f53388bb3c460c7f88cf72 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 24 Jan 2023 21:11:42 +0000
+Subject: [PATCH] IWYU: add cstdint for uintptr_t in partition_alloc_forward
+
+---
+ base/allocator/partition_allocator/partition_alloc_forward.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/base/allocator/partition_allocator/partition_alloc_forward.h b/base/allocator/partition_allocator/partition_alloc_forward.h
+index ab93272..2a3f4ab 100644
+--- a/base/allocator/partition_allocator/partition_alloc_forward.h
++++ b/base/allocator/partition_allocator/partition_alloc_forward.h
+@@ -7,6 +7,7 @@
+ 
+ #include <algorithm>
+ #include <cstddef>
++#include <cstdint>
+ #include <type_traits>
+ 
+ #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
+-- 
+2.39.1
+
